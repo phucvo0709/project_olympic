@@ -1,6 +1,5 @@
-<p align="center">
-  ![alt text](https://i.imgur.com/FyNbRiE.png)
-</p>
+![construction image](https://i.imgur.com/FyNbRiE.png)
+
 Project started in January and is under construction
 
 Installation guide:
