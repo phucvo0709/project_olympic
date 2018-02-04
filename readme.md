@@ -1,11 +1,11 @@
-![construction image](https://i.imgur.com/FyNbRiE.png)
+![construction image](httphttps://github.com/phucvo0709/project_olympic/issuess://i.imgur.com/FyNbRiE.png)
 
 <p align="center">Project started in January and is under construction</p>
 
 
 <strong>Installation guide:</strong>
 
-<span style=color:"red">1:</span> git clone https://github.com/phucvo0709/project_olympic.git
+<p style='color:red'>1:</p> git clone https://github.com/phucvo0709/project_olympic.git
 
 2: npm install
 
