@@ -1,3 +1,6 @@
+<p align="center">
+  ![alt text](https://i.imgur.com/FyNbRiE.png)
+</p>
 Project started in January and is under construction
 
 Installation guide:
