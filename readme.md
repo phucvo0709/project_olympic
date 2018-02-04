@@ -1,6 +1,6 @@
 ![construction image](https://i.imgur.com/FyNbRiE.png)
 
-<p align="center">Project started in January and is under construction</p>
+<p align="center">Project started in January 2018 and is under construction</p>
 
 <strong>Installation guide:</strong>
 
