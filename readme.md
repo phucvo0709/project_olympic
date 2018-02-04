@@ -2,7 +2,8 @@
 
 <p align="center">Project started in January and is under construction</p>
 
-Installation guide:
+
+<strong>Installation guide:</strong>
 
 1: git clone https://github.com/phucvo0709/project_olympic.git
 
