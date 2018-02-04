@@ -5,7 +5,7 @@
 
 <strong>Installation guide:</strong>
 
-<span style="color:blue">some <em>blue</em> text</span>.</p> git clone https://github.com/phucvo0709/project_olympic.git
+- <span style="color:orange;">Word up</span> git clone https://github.com/phucvo0709/project_olympic.git
 
 2: npm install
 
