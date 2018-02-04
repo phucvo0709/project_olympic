@@ -5,7 +5,7 @@
 
 <strong>Installation guide:</strong>
 
-1: git clone https://github.com/phucvo0709/project_olympic.git
+<span style=color:"red">1:</span> git clone https://github.com/phucvo0709/project_olympic.git
 
 2: npm install
 
