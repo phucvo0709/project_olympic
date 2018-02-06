@@ -10,6 +10,7 @@ require('./bootstrap');
 window.Vue = require('vue');
 import Vue from 'vue';
 import axios from 'axios'
+axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
 import swal from 'sweetalert'
 import animate from 'animate.css'
 

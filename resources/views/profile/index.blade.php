@@ -76,9 +76,9 @@
                                 </div>
                             </div>
                             <div class="top-header-author">
-                                <a href="02-ProfilePage.html" class="author-thumb">
-                                    <img src="@if(Auth::check()) {{Storage::url(Auth::user()->avatar) }} @endif" alt="author">
-                                </a>
+                                <router-link to="/profile/{{Auth::user()->slug}}/avatar" active-class="active" class="author-thumb">
+                                    <img style="max-width: 90px; max-height: 90px" src="@if(Auth::check()) {{url(Auth::user()->avatar)}} @endif" alt="author">
+                                </router-link>
                                 <div class="author-content">@if(Auth::check()) {{Auth::user()->name}} @endif</a>
                                     <div class="country">San Francisco, CA</div>
                                 </div>

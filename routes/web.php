@@ -27,9 +27,14 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/logout', function(){Auth::logout();return redirect('/login');});
 });
 Route::group(['middleware' => 'auth'], function() {
+    Route::post('/updateavatar', 'ProfileController@updateAvatar');
+    Route::get('/apigetprofile/{slug}', 'ProfileController@apiGetProfile');
+    Route::put('/updateprofile', 'ProfileController@updateProfile');
     Route::get('/timeline/{slug}', 'ProfileController@timeline');
     Route::get('/profile/{slug}/about', 'ProfileController@about');
     Route::get('/profile/{slug}/friends', 'ProfileController@friends');
     Route::get('/profile/{slug}/photos', 'ProfileController@photos');
     Route::get('/profile/{slug}/videos', 'ProfileController@videos');
+    Route::get('/profile/{slug}/avatar', 'ProfileController@avatar');
 });
+

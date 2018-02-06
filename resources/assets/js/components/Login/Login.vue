@@ -20,7 +20,7 @@
                         <input class="form-control" placeholder="Your Password" name="password" type="password" v-model="password">
                     </div>
                 </div>
-                <button class="btn btn-lg btn-primary full-width" type="submit" :disabled="!validLoginForm">Login</button>
+                <button class="btn btn-lg btn-primary full-width" type="submit">Login</button>
                 <div class="title"><a href="/password/reset">Reset Password</a></div>
             </div>
         </form>
@@ -37,28 +37,20 @@
                 email: '',
                 password: '',
                 slug: '',
-                loading: false,
                 success: false,
                 alertSuccess : null,
                 alertError: null
             }
         },
         methods: {
-            emailValid() {
-                if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.email))
-                {
-                    return true;
-                }else{
-                    return false;
-                }
-            },
+
             attemptLogin(){
-                this.loading = true;
                 this.errors = [];
                 axios.post('/login', {
                     email: this.email,
                     password: this.password
                 }).then(resp => {
+                    this.alertError = '',
                     this.success = true,
                     this.alertSuccess = 'Login successfully waits for a moment',
                     axios.get(`/user/${this.email}`)
@@ -67,16 +59,11 @@
                             location.href = `/timeline/${this.slug}/`
                         })
                 }).catch(error => {
-                    this.loading = false,
                     this.alertError = "User or Password not invailid";
                 })
-
             }
         },
         computed: {
-            validLoginForm(){
-                return this.emailValid() && this.password && !this.loading
-            }
         }
     }
 </script>

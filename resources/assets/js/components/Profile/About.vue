@@ -7,7 +7,7 @@
                         <h6 class="title">Hobbies and Interests</h6>
                         <a href="#" class="more">
                             <svg class="olymp-three-dots-icon">
-                                <use xlink:href="svg-icons/sprites/icons.svg#olymp-three-dots-icon"></use>
+                                <use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use>
                             </svg>
                         </a>
                     </div>
@@ -74,7 +74,7 @@
                         <h6 class="title">Education and Employement</h6>
                         <a href="#" class="more">
                             <svg class="olymp-three-dots-icon">
-                                <use xlink:href="svg-icons/sprites/icons.svg#olymp-three-dots-icon"></use>
+                                <use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use>
                             </svg>
                         </a>
                     </div>
@@ -140,11 +140,8 @@
                 <div class="ui-block">
                     <div class="ui-block-title">
                         <h6 class="title">Personal Info</h6>
-                        <a href="#" class="more">
-                            <svg class="olymp-three-dots-icon">
-                                <use xlink:href="svg-icons/sprites/icons.svg#olymp-three-dots-icon"></use>
-                            </svg>
-                        </a>
+                        <a data-toggle="modal" data-target="#modalUpdateProfile" href="#" class="btn btn-breez btn-sm" style="display: block"
+                        v-if="check == true">Edit</a>
                     </div>
                     <div class="ui-block-content">
 
@@ -154,88 +151,87 @@
                         <ul class="widget w-personal-info">
                             <li>
                                 <span class="title">About Me:</span>
-                                <span class="text">Hi, I’m James, I’m 36 and I work as a Digital Designer for the
-    “Daydreams” Agency in Pier 56
-    </span>
+                                <span class="text" v-if="profile.about != ''">{{ profile.about }}</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                             <li>
                                 <span class="title">Birthday:</span>
-                                <span class="text">December 14th, 1980</span>
+                                <span class="text" v-if="profile.birthDay != ''">{{ profile.birthDay }}</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                             <li>
                                 <span class="title">Birthplace:</span>
-                                <span class="text">Austin, Texas, USA</span>
+                                <span class="text" v-if="birthPlace != ''">{{ profile.birthPlace }}</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                             <li>
                                 <span class="title">Lives in:</span>
-                                <span class="text">San Francisco, California, USA</span>
+                                <span class="text" v-if="profile.liveIn != ''">{{ profile.liveIn }}</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                             <li>
                                 <span class="title">Occupation:</span>
-                                <span class="text">UI/UX Designer</span>
+                                <span class="text" v-if="profile.occupation != ''">{{ profile.occupation }}</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                             <li>
                                 <span class="title">Joined:</span>
-                                <span class="text">April 31st, 2014</span>
+                                <span class="text" v-if="user.created_at != ''">{{ user.created_at }}</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                             <li>
                                 <span class="title">Gender:</span>
-                                <span class="text">Male</span>
-                            </li>
-                            <li>
-                                <span class="title">Status:</span>
-                                <span class="text">Married</span>
+                                <span class="text" v-if="user.gender == 1">Male</span>
+                                <span class="text" v-else-if="user.gender == 0">Male</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                             <li>
                                 <span class="title">Email:</span>
-                                <a href="#" class="text">jspiegel@yourmail.com</a>
+                                <a href="#" class="text" v-if="user.email != ''">{{ user.email }}</a>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
-                            <li>
-                                <span class="title">Website:</span>
-                                <a href="#" class="text">daydreamsagency.com</a>
-                            </li>
+
                             <li>
                                 <span class="title">Phone Number:</span>
-                                <span class="text">(044) 555 - 4369 - 8957</span>
-                            </li>
-                            <li>
-                                <span class="title">Religious Belifs:</span>
-                                <span class="text">-</span>
-                            </li>
-                            <li>
-                                <span class="title">Political Incline:</span>
-                                <span class="text">Democrat</span>
+                                <span class="text" v-if="profile.phoneNumber != ''">{{ profile.phoneNumber }}</span>
+                                <span class="text" v-else>{{ empty }}</span>
                             </li>
                         </ul>
-
                         <!-- ... end W-Personal-Info -->
-                        <!-- W-Socials -->
-
-                        <div class="widget w-socials">
-                            <h6 class="title">Other Social Networks:</h6>
-                            <a href="#" class="social-item bg-facebook">
-                                <i class="fa fa-facebook" aria-hidden="true"></i>
-                                Facebook
-                            </a>
-                            <a href="#" class="social-item bg-twitter">
-                                <i class="fa fa-twitter" aria-hidden="true"></i>
-                                Twitter
-                            </a>
-                            <a href="#" class="social-item bg-dribbble">
-                                <i class="fa fa-dribbble" aria-hidden="true"></i>
-                                Dribbble
-                            </a>
-                        </div>
-                        <!-- ... end W-Socials -->
                     </div>
                 </div>
             </div>
         </div>
+        <edit-form :profile="profile" @profileUpdated="profile = $event"></edit-form>
     </div>
 </template>
 
 <script>
-    export default {}
+    export default {
+        data() {
+            return{
+                user: '',
+                profile: '',
+                empty: 'empty',
+                slug: this.$route.params.slug,
+                check: false,
+            }
+        },
+        created() {
+            axios.get(`/apigetprofile/${this.slug}`)
+                .then(resp =>{
+                    this.user = resp.data[0][0],
+                        this.profile = resp.data[1][0],
+                        this.check = resp.data[2]
+                })
+        },
+        components:{
+            'edit-form': require('./EditProfile')
+        },
+        methods: {
+
+        }
+    }
 </script>
 
 <style scoped>
