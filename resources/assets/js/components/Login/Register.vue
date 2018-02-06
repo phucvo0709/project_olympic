@@ -88,7 +88,7 @@
                         axios.get(`/user/${this.email}`)
                             .then(resp => {
                                 this.slug = resp.data[0][0].slug
-                                location.href = `/profile/${this.slug}`
+                                location.href = `/profile/${this.slug}/about`
                             })
                     })
                     .catch(error => {

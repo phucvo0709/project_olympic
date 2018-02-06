@@ -19,6 +19,7 @@
         "vue": "^2.5.13"
     },
     "dependencies": {
+        "animate.css": "^3.5.2",
         "sweetalert": "^2.1.0",
         "vue-router": "^3.0.1",
         "vuelidate": "^0.6.1"

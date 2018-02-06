@@ -11,6 +11,7 @@ window.Vue = require('vue');
 import Vue from 'vue';
 import axios from 'axios'
 import swal from 'sweetalert'
+import animate from 'animate.css'
 
 import VueRouter from 'vue-router'
 import {routes} from "./routes";
@@ -27,7 +28,8 @@ const router = new VueRouter({
  */
 
 Vue.component('vue-home', require('./components/Home'));
-Vue.component('vue-login', require('./components/Login'))
+Vue.component('vue-login', require('./components/Login'));
+Vue.component('vue-profile', require('./components/Profile'));
 
 const app = new Vue({
     el: '#app',

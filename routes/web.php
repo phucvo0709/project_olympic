@@ -26,7 +26,10 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/user/{email}', 'UserController@index');
     Route::get('/logout', function(){Auth::logout();return redirect('/login');});
 });
-Route::group(['prefix' => 'profile',  'middleware' => 'auth'], function() {
-    Route::get('{slug}', 'ProfileController@index');
-    Route::get('friends', 'ProfileController@friends' );
+Route::group(['middleware' => 'auth'], function() {
+    Route::get('/timeline/{slug}', 'ProfileController@timeline');
+    Route::get('/profile/{slug}/about', 'ProfileController@about');
+    Route::get('/profile/{slug}/friends', 'ProfileController@friends');
+    Route::get('/profile/{slug}/photos', 'ProfileController@photos');
+    Route::get('/profile/{slug}/videos', 'ProfileController@videos');
 });
