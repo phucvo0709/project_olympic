@@ -27,6 +27,15 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/logout', function(){Auth::logout();return redirect('/login');});
 });
 Route::group(['middleware' => 'auth'], function() {
+    Route::get('/add', function(){
+        return \App\User::find(1)->add_friend(2);
+    });
+    Route::get('/acc', function(){
+        return \App\User::find(2)->accept_friend(1);
+    });
+    Route::get('/friends', function(){
+        return \App\User::find(2)->friends();
+    });
     Route::post('/updateavatar', 'ProfileController@updateAvatar');
     Route::get('/apigetprofile/{slug}', 'ProfileController@apiGetProfile');
     Route::put('/updateprofile', 'ProfileController@updateProfile');
@@ -38,3 +47,6 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/profile/{slug}/avatar', 'ProfileController@avatar');
 });
 
+Route::get('/hello', function(){
+    return Auth::user()->hello();
+});
