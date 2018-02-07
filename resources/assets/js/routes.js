@@ -7,7 +7,7 @@ import profileAvatar from './components/Profile/EditAvatar'
 
 export const routes = [
     { path: '/timeline/:slug', component: profileTimeline },
-    { path: '/profile/:slug/about', component: profileAbout },
+    { path: '/profile/:slug/about', component: profileAbout, name: 'about' },
     { path: '/profile/:slug/friends', component: profileFriends },
     { path: '/profile/:slug/photos', component: profilePhotos },
     { path: '/profile/:slug/videos' , component: profileVideos },

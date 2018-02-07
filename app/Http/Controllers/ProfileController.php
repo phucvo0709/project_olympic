@@ -21,8 +21,13 @@ class ProfileController extends Controller
     public function about(){
         return view('profile.index');
     }
-    public function friends(){
-        return view('profile.index');
+    public function friends($slug){
+        $userSlug = Auth::user()->slug;
+        if($userSlug == $slug){
+            return view('profile.index');
+        }else{
+            return redirect('/profile/'.$userSlug.'/friends');
+        }
     }
     public function photos(){
         return view('profile.index');

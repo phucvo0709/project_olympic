@@ -3,7 +3,7 @@
         <div class="modal fade" id="modalUpdateProfile">
             <div class="modal-dialog ui-block window-popup popup-write-rewiev">
                 <a href="#" class="close icon-close" data-dismiss="modal" aria-label="Close">
-                    <svg class="olymp-close-icon"><use xlink:href="svg-icons/sprites/icons.svg#olymp-close-icon"></use></svg>
+                    <svg class="olymp-close-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-close-icon'"></use></svg>
                 </a>
 
                 <div class="ui-block-title">

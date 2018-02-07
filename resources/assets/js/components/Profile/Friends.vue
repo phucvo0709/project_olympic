@@ -1,14 +1,13 @@
 <template>
     <div class="container">
+        <h3>Friend Pending</h3>
         <div class="row">
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6">
+            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6" v-for="user in users">
                 <div class="ui-block">
-
                     <!-- Friend Item -->
-
                     <div class="friend-item">
                         <div class="friend-header-thumb">
-                            <img :src="'/img/friend1.jpg'" alt="friend">
+                            <img style="max-width: 293px; max-height: 112.4px;" :src="'/img/friend1.jpg'" alt="friend">
                         </div>
 
                         <div class="friend-item-content">
@@ -29,11 +28,10 @@
                             </div>
                             <div class="friend-avatar">
                                 <div class="author-thumb">
-                                    <img :src="'/img/avatar1.jpg'" alt="author">
+                                    <img style="max-width:100px; max-height:100px" :src="user.avatar" alt="author">
                                 </div>
                                 <div class="author-content">
-                                    <a href="#" class="h5 author-name">Nicholas Grissom</a>
-                                    <div class="country">San Francisco, CA</div>
+                                    <router-link :to="{ name: 'about', params: {slug: user.name } }" class="h5 author-name">{{user.name}}</router-link>
                                 </div>
                             </div>
 
@@ -41,17 +39,9 @@
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide">
                                         <div class="friend-count" data-swiper-parallax="-500">
-                                            <a href="#" class="friend-count-item">
-                                                <div class="h6">52</div>
-                                                <div class="title">Friends</div>
-                                            </a>
-                                            <a href="#" class="friend-count-item">
-                                                <div class="h6">240</div>
-                                                <div class="title">Photos</div>
-                                            </a>
-                                            <a href="#" class="friend-count-item">
-                                                <div class="h6">16</div>
-                                                <div class="title">Videos</div>
+                                            <a class="friend-count-item">
+                                                <div class="title" v-if="user.gender = 1">Male</div>
+                                                <div class="title" v-else>Female</div>
                                             </a>
                                         </div>
                                         <div class="control-block-button" data-swiper-parallax="-100">
@@ -84,94 +74,11 @@
                         </div>
                     </div>
 
-                    <!-- ... end Friend Item -->			</div>
-            </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6">
-                <div class="ui-block">
-
-                    <!-- Friend Item -->
-
-                    <div class="friend-item">
-                        <div class="friend-header-thumb">
-                            <img :src="'/img/friend2.jpg'" alt="friend">
-                        </div>
-
-                        <div class="friend-item-content">
-
-                            <div class="more">
-                                <svg class="olymp-three-dots-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use></svg>
-                                <ul class="more-dropdown">
-                                    <li>
-                                        <a href="#">Report Profile</a>
-                                    </li>
-                                    <li>
-                                        <a href="#">Block Profile</a>
-                                    </li>
-                                    <li>
-                                        <a href="#">Turn Off Notifications</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="friend-avatar">
-                                <div class="author-thumb">
-                                    <img :src="'/img/avatar2.jpg'" alt="author">
-                                </div>
-                                <div class="author-content">
-                                    <a href="#" class="h5 author-name">Marina Valentine</a>
-                                    <div class="country">Long Island, NY</div>
-                                </div>
-                            </div>
-
-                            <div class="swiper-container">
-                                <div class="swiper-wrapper">
-                                    <div class="swiper-slide">
-                                        <div class="friend-count" data-swiper-parallax="-500">
-                                            <a href="#" class="friend-count-item">
-                                                <div class="h6">52</div>
-                                                <div class="title">Friends</div>
-                                            </a>
-                                            <a href="#" class="friend-count-item">
-                                                <div class="h6">240</div>
-                                                <div class="title">Photos</div>
-                                            </a>
-                                            <a href="#" class="friend-count-item">
-                                                <div class="h6">16</div>
-                                                <div class="title">Videos</div>
-                                            </a>
-                                        </div>
-                                        <div class="control-block-button" data-swiper-parallax="-100">
-                                            <a href="#" class="btn btn-control bg-blue">
-                                                <svg class="olymp-happy-face-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-                                            </a>
-
-                                            <a href="#" class="btn btn-control bg-purple">
-                                                <svg class="olymp-chat---messages-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-chat---messages-icon'"></use></svg>
-                                            </a>
-
-                                        </div>
-                                    </div>
-
-                                    <div class="swiper-slide">
-                                        <p class="friend-about" data-swiper-parallax="-500">
-                                            Hi!, I’m Marina and I’m a Community Manager for “Gametube”. Gamer and full-time mother.
-                                        </p>
-
-                                        <div class="friend-since" data-swiper-parallax="-100">
-                                            <span>Friends Since:</span>
-                                            <div class="h6">December 2014</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- If we need pagination -->
-                                <div class="swiper-pagination"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ... end Friend Item -->			</div>
+                    <!-- ... end Friend Item -->
+                </div>
             </div>
         </div>
+        <h3>All Friend</h3>
     </div>
 
     <!-- Friends -->
@@ -182,7 +89,21 @@
 
 <script>
     export default {
-        name: "friends"
+        data() {
+            return {
+                users: '',
+                slug: this.$route.params.slug
+            }
+        },
+        created() {
+            axios.get('/getpendingrequest')
+                .then(resp => {
+                    this.users = resp.data
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+        }
     }
 </script>
 

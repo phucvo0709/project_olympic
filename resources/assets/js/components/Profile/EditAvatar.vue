@@ -63,10 +63,13 @@
             updateAvatar(){
                 let avatar = this.avatar
                 axios.post('/updateavatar', {
-                    'avatar': avatar
+                    'avatar': avatar,
                     })
                     .then(resp => {
-                        swal(resp.data);
+                        swal(resp.data)
+                            .then(() => {
+                                location.reload()
+                            });
                     })
             }
         }

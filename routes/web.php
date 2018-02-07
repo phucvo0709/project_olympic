@@ -27,15 +27,6 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/logout', function(){Auth::logout();return redirect('/login');});
 });
 Route::group(['middleware' => 'auth'], function() {
-    Route::get('/add', function(){
-        return \App\User::find(1)->add_friend(2);
-    });
-    Route::get('/acc', function(){
-        return \App\User::find(2)->accept_friend(1);
-    });
-    Route::get('/friends', function(){
-        return \App\User::find(2)->friends();
-    });
     Route::post('/updateavatar', 'ProfileController@updateAvatar');
     Route::get('/apigetprofile/{slug}', 'ProfileController@apiGetProfile');
     Route::put('/updateprofile', 'ProfileController@updateProfile');
@@ -45,8 +36,29 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/profile/{slug}/photos', 'ProfileController@photos');
     Route::get('/profile/{slug}/videos', 'ProfileController@videos');
     Route::get('/profile/{slug}/avatar', 'ProfileController@avatar');
-});
 
-Route::get('/hello', function(){
-    return Auth::user()->hello();
+    Route::get('/addfriend/{user_requested_id}', function($user_requested_id){
+        return Auth::user()->add_friend($user_requested_id);
+    });
+    Route::get('/getauthid', function(){
+        $id = Auth::user()->id;
+        return response()->json($id);
+    });
+
+    Route::get('/getpendingids', function(){
+        return Auth::user()->pending_friend_requests_sent_ids();
+    });
+
+    Route::get('/getpendingto/{user_id}', function($user_id){
+        return Auth::user()->has_pending_friend_request_sent_to($user_id);
+    });
+
+    Route::delete('/cancelrequest/{user_requested}', function($user_requested){
+        return Auth::user()->cancel_request_add_friend($user_requested);
+    });
+
+    Route::get('/getpendingrequest', function(){
+        return Auth::user()->pending_friend_requests_sent();
+    });
+
 });
