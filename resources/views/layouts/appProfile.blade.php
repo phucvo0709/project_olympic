@@ -201,7 +201,7 @@
             <div class="control-block">
                 <div class="author-page author vcard inline-items">
                     <div class="author-thumb">
-                        <img alt="author" src="@if(Auth::check()) {{Storage::url(Auth::user()->avatar) }} @endif" class="avatar">
+                        <img alt="author" src="@if(Auth::check()) {{asset(Auth::user()->avatar)}} @endif" class="avatar">
                         <span class="icon-status online"></span>
                     </div>
                     <a href="02-ProfilePage.html" class="author-name fn">
@@ -1214,7 +1214,7 @@
 
             <div class="author-page author vcard inline-items more">
                 <div class="author-thumb">
-                    <img style="max-width: 90px; max-height: 90px" alt="author" src="@if(Auth::check()) {{url(Auth::user()->avatar)}} @endif" class="avatar">
+                    <img style="max-width: 90px; max-height: 90px" alt="author" src="@if(Auth::check()) {{asset(Auth::user()->avatar)}} @endif" class="avatar">
                     <span class="icon-status online"></span>
                     <div class="more-dropdown more-with-triangle">
                         <div class="mCustomScrollbar" data-mcs-theme="dark">
@@ -1335,7 +1335,6 @@
 </header>
 
 <!-- ... end Header-BP -->
-
 
 <!-- Responsive Header-BP -->
 

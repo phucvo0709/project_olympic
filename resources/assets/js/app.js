@@ -13,6 +13,7 @@ window.Vue = require('vue');
 import Vue from 'vue';
 import axios from 'axios'
 axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
+
 import swal from 'sweetalert'
 import animate from 'animate.css'
 
@@ -33,6 +34,7 @@ const router = new VueRouter({
 Vue.component('vue-home', require('./components/Home'));
 Vue.component('vue-login', require('./components/Login'));
 Vue.component('vue-profile', require('./components/Profile'));
+Vue.component('vue-head', require('./components/Head'));
 
 const app = new Vue({
     el: '#app',
