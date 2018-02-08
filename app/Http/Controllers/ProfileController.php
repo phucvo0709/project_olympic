@@ -79,11 +79,20 @@ class ProfileController extends Controller
 
         file_put_contents($path, $decode);
 
-        unlink(public_path() . Auth::user()->avatar);
+        $fileBaseUser = Auth::user()->avatar;
 
-        Auth::user()->update(['avatar' => $fileName]);
+        $fileImageDefault = "/img/avatar".Auth::user()->gender.".jpg";
 
-        return response()->json('Update Avatar Success');
+        if(strcmp($fileBaseUser,$fileImageDefault) != 0){
+            unlink(public_path() . Auth::user()->avatar);
+            Auth::user()->update(['avatar' => $fileName]);
+        }else{
+            Auth::user()->update(['avatar' => $fileName]);
+        }
+        return response()->json('Update Success');
+
+
+
 
     }
 

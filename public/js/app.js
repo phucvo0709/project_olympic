@@ -12301,6 +12301,8 @@ __webpack_require__(17);
 
 window.Vue = __webpack_require__(14);
 
+//import npm
+
 
 __WEBPACK_IMPORTED_MODULE_1_axios___default.a.defaults.headers.post['Content-Type'] = 'multipart/form-data';
 
