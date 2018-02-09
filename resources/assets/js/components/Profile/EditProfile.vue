@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="modal fade" id="modalUpdateProfile">
+        <div class="modal fade" id="modalUpdateProfile" tabindex="-1" role="dialog">
             <div class="modal-dialog ui-block window-popup popup-write-rewiev">
                 <a href="#" class="close icon-close" data-dismiss="modal" aria-label="Close">
                     <svg class="olymp-close-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-close-icon'"></use></svg>
@@ -70,18 +70,22 @@
                 let profile = this.profile
                 axios.put('/updateprofile', profile)
                     .then(resp => {
-                        $('#modalUpdateProfile').modal('hide');
+                        $("#modalUpdateProfile").removeClass("in");
+                        $(".modal-backdrop").remove();
                         $('body').removeClass('modal-open');
-                        $('.modal-backdrop').remove();
-                    })
-                    .catch(error => {
-                        console.log(error)
+                        $('body').css('padding-right', '');
+                        $("#modalUpdateProfile").hide();
                     })
             }
         }
     }
 </script>
 
-<style scoped>
-
+<style>
+    body{
+        padding-right: 0px !important;
+    }
+    .modal-open {
+        padding-right: 0px !important;
+    }
 </style>

@@ -2,7 +2,7 @@
     <div class="container">
         <h3>Friend Pending</h3>
         <div class="row">
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6" v-for="user in users">
+            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6" v-for="pendingFriend in pendingFriends">
                 <div class="ui-block">
                     <!-- Friend Item -->
                     <div class="friend-item">
@@ -28,10 +28,10 @@
                             </div>
                             <div class="friend-avatar">
                                 <div class="author-thumb">
-                                    <img style="max-width:100px; max-height:100px" :src="user.avatar" alt="author">
+                                    <img style="max-width:100px; max-height:100px" :src="pendingFriend.avatar" alt="author">
                                 </div>
                                 <div class="author-content">
-                                    <router-link :to="{ name: 'about', params: {slug: user.name } }" class="h5 author-name">{{user.name}}</router-link>
+                                    <router-link :to="{ name: 'about', params: {slug: pendingFriend.name } }" class="h5 author-name">{{pendingFriend.name}}</router-link>
                                 </div>
                             </div>
 
@@ -40,7 +40,7 @@
                                     <div class="swiper-slide">
                                         <div class="friend-count" data-swiper-parallax="-500">
                                             <a class="friend-count-item">
-                                                <div class="title" v-if="user.gender = 1">Male</div>
+                                                <div class="title" v-if="pendingFriend.gender = 1">Male</div>
                                                 <div class="title" v-else>Female</div>
                                             </a>
                                         </div>
@@ -88,22 +88,21 @@
 </template>
 
 <script>
+    import {mapGetters} from 'vuex'
     export default {
+        mounted: function(){
+            this.$store.dispatch('getpendingFriends')
+        },
+        computed:{
+            ...mapGetters({
+                pendingFriends: 'penddingFriends'
+            })
+        },
         data() {
             return {
-                users: '',
                 slug: this.$route.params.slug
             }
         },
-        created() {
-            axios.get('/getpendingrequest')
-                .then(resp => {
-                    this.users = resp.data
-                })
-                .catch(error => {
-                    console.log(error)
-                })
-        }
     }
 </script>
 

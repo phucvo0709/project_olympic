@@ -7,7 +7,6 @@
                         <h6 class="title">Hobbies and Interests</h6>
                         <button @click="addFriend" id="btnAddFriend" class="btn btn-breez btn-sm"
                                 style="color:white; display: block; float: right" v-if="authId != user.id">{{buttonAddFriend}}</button>
-
                     </div>
                     <div class="ui-block-content">
                         <div class="row">
@@ -140,40 +139,28 @@
 </template>
 
 <script>
+    import {mapGetters} from 'vuex'
     export default {
-        mounted(){
-          axios.get('/getauthid')
-              .then(resp =>{
-                  this.authId = resp.data
-              })
+        mounted: function(){
+            this.$store.dispatch('getUser', this.slug)
+        },
+        computed: {
+            ...mapGetters({
+                user: 'user',
+                profile: 'profile',
+                check: 'check',
+                buttonAddFriend: 'buttonAddFriend',
+            }),
+            slug() {
+                return this.$route.params.slug
+            }
         },
         data() {
             return{
                 authId: '',
-                user: '',
-                profile: '',
                 friendPending: [],
                 empty: 'empty',
-                buttonAddFriend: 'Add Friend',
-                slug: this.$route.params.slug,
-                check: false,
             }
-        },
-        created() {
-            axios.get(`/apigetprofile/${this.slug}`)
-                .then(resp =>{
-                    this.user = resp.data[0][0],
-                        this.profile = resp.data[1][0],
-                        this.check = resp.data[2]
-                    axios.get(`/getpendingto/${this.user.id}`)
-                        .then(resp => {
-                            if(resp.data = 1){
-                                this.buttonAddFriend = 'Cancel Request'
-                                $('.btn-breez').css('background', 'orange')
-                            }
-                        })
-                })
-
         },
         components:{
             'edit-form': require('./EditProfile')
@@ -193,7 +180,7 @@
                         .then(resp =>{
                             swal(resp.data)
                             this.buttonAddFriend = "Add Friend";
-                            $('.btn-breez').css('background', '#08ddc1')
+                            $('#btnAddFriend').css('background', '#08ddc1')
                         })
                         .catch(error => {
                             console.log(error)

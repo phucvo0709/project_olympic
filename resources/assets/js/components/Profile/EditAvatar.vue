@@ -9,7 +9,7 @@
                         </div>
                         <div class="ui-block-content">
                             <!-- Personal Account Settings Form -->
-                            <form v-on:submit.prevent="updateAvatar()" method="POST" enctype="multipart/form-data">
+                            <form v-on:submit.prevent="updateAvatar" method="POST" enctype="multipart/form-data">
                                 <div class="row">
                                     <div class="col-lg-12">
                                         <img style="display:block; margin:0 auto; padding: 20px; width:200px; height:200px"
@@ -34,43 +34,36 @@
 </template>
 
 <script>
+    import {mapGetters} from 'vuex'
     export default {
-        data(){
-            return {
-                user: '',
-                check: '',
-                avatar: '',
-                slug: this.$route.params.slug,
-            }
+        mounted: function(){
+            this.$store.dispatch('getUser', this.slug)
         },
-        created() {
-            axios.get(`/apigetprofile/${this.slug}`)
-                .then(resp =>{
-                    this.user = resp.data[0][0],
-                    this.check = resp.data[2],
-                        this.avatar = this.user.avatar
-                })
+        computed: {
+            ...mapGetters({
+                user: 'user',
+                profile: 'profile',
+                avatar: 'avatar',
+                check: 'check',
+                buttonAddFriend: 'buttonAddFriend',
+            }),
+            slug() {
+                return this.$route.params.slug
+            },
         },
         methods: {
             getImage(e){
+                let avatar = this.avatar
                 let image = e.target.files[0];
                 let reader = new FileReader();
                 reader.readAsDataURL(image);
                 reader.onload = e => {
-                    this.avatar = e.target.result
+                    avatar = e.target.result
+                    this.$store.dispatch('updateDisplayAvatar', e.target.result)
                 }
             },
             updateAvatar(){
-                let avatar = this.avatar
-                axios.post('/updateavatar', {
-                    'avatar': avatar,
-                    })
-                    .then(resp => {
-                        swal(resp.data)
-                            .then(() => {
-                                location.reload()
-                            });
-                    })
+                this.$store.dispatch('updateAvatar')
             }
         }
     }

@@ -17,13 +17,16 @@ axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
 import swal from 'sweetalert'
 import animate from 'animate.css'
 
+import store from './store/store'
+
 import VueRouter from 'vue-router'
 import {routes} from "./routes";
 
 Vue.use(VueRouter);
+
 const router = new VueRouter({
     mode: 'history',
-    routes
+    routes,
 })
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -38,5 +41,6 @@ Vue.component('vue-head', require('./components/Head'));
 
 const app = new Vue({
     el: '#app',
-    router
+    router,
+    store
 });
