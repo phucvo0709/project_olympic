@@ -1,8 +1,8 @@
 const state = {
+    userId: null,
     user: [],
     profile: [],
     check: false,
-    buttonAddFriend: 'Add Friend',
 }
 
 const actions = {
@@ -10,6 +10,9 @@ const actions = {
 }
 
 const mutations = {
+    'SET_USERID' (state, userId){
+      state.userId = userId
+    },
     'SET_USER' (state, user){
         state.user = user
     },
@@ -19,24 +22,22 @@ const mutations = {
     'SET_CHECK' (state, check){
         state.check = check
     },
-    'SET_BUTTONADDFRIEND' (state, data){
-        state.buttonAddFriend = data
-    },
 }
 
 const getters = {
+    userId: state=> {
+        return state.userId
+    },
     user: state => {
         return state.user
     },
     profile: state => {
         return state.profile
     },
-    buttonAddFriend: state => {
-        return state.buttonAddFriend
-    },
     check: state=>{
         return state.check
     },
+
 }
 
 export default {

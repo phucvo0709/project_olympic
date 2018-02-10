@@ -8,7 +8,7 @@ const actions = {
         commit('UPDATE_AVATAR', e)
     },
     updateAvatar(){
-        axios.post('/updateavatar', {
+        axios.post('/api/updateavatar', {
             'avatar': state.avatar,
         })
             .then(resp => {

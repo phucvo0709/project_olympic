@@ -5,8 +5,8 @@
                 <div class="ui-block">
                     <div class="ui-block-title">
                         <h6 class="title">Hobbies and Interests</h6>
-                        <button @click="addFriend" id="btnAddFriend" class="btn btn-breez btn-sm"
-                                style="color:white; display: block; float: right" v-if="authId != user.id">{{buttonAddFriend}}</button>
+                        <button @click="addFriend(userId)" class="btn btn-breez btn-sm btnAddFriend"
+                                style="color:white; display: block; float: right" v-if="authId != userId">{{buttonAddFriend}}</button>
                     </div>
                     <div class="ui-block-content">
                         <div class="row">
@@ -146,6 +146,7 @@
         },
         computed: {
             ...mapGetters({
+                authId: 'authId',
                 user: 'user',
                 profile: 'profile',
                 check: 'check',
@@ -153,44 +154,23 @@
             }),
             slug() {
                 return this.$route.params.slug
+            },
+            userId(){
+                return this.$store.getters.userId
             }
         },
         data() {
             return{
-                authId: '',
-                friendPending: [],
-                empty: 'empty',
+                empty: 'Empty',
             }
         },
         components:{
             'edit-form': require('./EditProfile')
         },
         methods: {
-            addFriend: function(){
-                if(this.buttonAddFriend == "Add Friend"){
-                    axios.get(`/addfriend/${this.user.id}`)
-                        .then(resp => {
-                            swal(resp.data);
-                            this.buttonAddFriend = "Pending";
-                            $('.btn-breez').css('background', 'gray')
-                            document.getElementById("btnAddFriend").disabled = true;
-                        })
-                }else if(this.buttonAddFriend == "Cancel Request"){
-                    axios.delete(`/cancelrequest/${this.user.id}`)
-                        .then(resp =>{
-                            swal(resp.data)
-                            this.buttonAddFriend = "Add Friend";
-                            $('#btnAddFriend').css('background', '#08ddc1')
-                        })
-                        .catch(error => {
-                            console.log(error)
-                        })
-                }
+            addFriend: function(userId){
+                this.$store.dispatch('addFriend', userId)
             }
-        }
+        },
     }
 </script>
-
-<style scoped>
-
-</style>

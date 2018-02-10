@@ -34,10 +34,10 @@ const router = new VueRouter({
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('vue-home', require('./components/Home'));
 Vue.component('vue-login', require('./components/Login'));
+Vue.component('vue-header', require('./components/Header'));
 Vue.component('vue-profile', require('./components/Profile'));
-Vue.component('vue-head', require('./components/Head'));
+Vue.component('vue-chat', require('./components/Chat'))
 
 const app = new Vue({
     el: '#app',

@@ -4,7 +4,7 @@ const state = {
 
 const actions = {
     getpendingFriends ({commit}){
-        axios.get('/getpendingrequest')
+        axios.get('/api/getpendingrequest')
             .then(resp => {
                 commit('GET_PENDDING_FRIENDS', resp.data)
             })

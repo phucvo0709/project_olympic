@@ -6,10 +6,10 @@ import profileVideos from './components/Profile/Videos'
 import profileAvatar from './components/Profile/EditAvatar'
 
 export const routes = [
-    { path: '/timeline/:slug', component: profileTimeline },
+    { path: '/timeline/:slug', component: profileTimeline, name: 'timeline' },
     { path: '/profile/:slug/about', component: profileAbout, name: 'about' },
-    { path: '/profile/:slug/friends', component: profileFriends },
-    { path: '/profile/:slug/photos', component: profilePhotos },
-    { path: '/profile/:slug/videos' , component: profileVideos },
-    { path: '/profile/:slug/avatar' , component: profileAvatar }
+    { path: '/profile/:slug/friends', component: profileFriends, name: 'friends' },
+    { path: '/profile/:slug/photos', component: profilePhotos, name: 'photos' },
+    { path: '/profile/:slug/videos' , component: profileVideos, name: 'videos' },
+    { path: '/profile/:slug/avatar' , component: profileAvatar, name: 'avatar' }
 ]

@@ -68,7 +68,7 @@
         methods: {
             updateProfile(){
                 let profile = this.profile
-                axios.put('/updateprofile', profile)
+                axios.put('/api/updateprofile', profile)
                     .then(resp => {
                         $("#modalUpdateProfile").removeClass("in");
                         $(".modal-backdrop").remove();

@@ -18,7 +18,10 @@ trait Friendable{
                 'user_requested' => $user_requested_id,
             ]);
             if($friendship){
-                return response()->json('success');
+                $status = Friendship::where('requester', Auth::user()->id)
+                    ->where('user_requested', $user_requested_id)->pluck('status');
+                $alertSuccess = 'Send a friend request successfully';
+                return response()->json([$status, $alertSuccess]);
             }
         }
     }

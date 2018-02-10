@@ -52,5 +52,5 @@ mix.scripts([
     'public/js/jquery.gifplayer.js',
     'public/js/mediaelement-and-player.js',
     'public/js/mediaelement-playlist-plugin.min.js',
-    'public/js/base-init.js',
+    // 'public/js/base-init.js',
 ], 'public/js/all.js');

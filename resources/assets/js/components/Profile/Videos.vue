@@ -1,6 +1,5 @@
 <template>
-    <div class="container">
-
+    <div>
         <div class="container">
             <div class="row">
                 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -16,7 +15,6 @@
                 </div>
             </div>
         </div>
-
 
         <div class="container">
             <div class="row">
@@ -200,7 +198,6 @@
             </div>
         </div>
 
-
         <div class="container">
             <div class="row">
                 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -222,7 +219,6 @@
         <div class="container">
             <div class="row">
                 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-xs-12">
-
                     <div class="ui-block video-item">
                         <div class="video-player">
                             <img :src="'/img/video10.jpg'" alt="photo">
@@ -233,16 +229,13 @@
 
                             <div class="more"><svg class="olymp-three-dots-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use></svg></div>
                         </div>
-
                         <div class="ui-block-content video-content">
                             <a href="#" class="h6 title">Rock Garden Festival - Day 3</a>
                             <time class="published" datetime="2017-03-24T18:18">18:44</time>
                         </div>
                     </div>
-
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-xs-12">
-
                     <div class="ui-block video-item">
                         <div class="video-player">
                             <img :src="'/img/video11.jpg'" alt="photo">
@@ -261,8 +254,6 @@
                     </div>
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-xs-12">
-
-
                     <div class="ui-block video-item">
                         <div class="video-player">
                             <img :src="'/img/video12.jpg'" alt="photo">
