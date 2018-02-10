@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Auth;
 trait Friendable{
     public function add_friend($user_requested_id){
 
-        if(Auth::user()->id === $user_requested_id){
-            return response()->json('can not make friend');
-        }else if($this->has_pending_friend_request_sent_to($user_requested_id) === 1){
+        if($this->has_pending_friend_request_sent_to($user_requested_id) == 1){
             return response()->json('have sent requests and wait for acceptance from the opponent');
         }else{
             $friendship = Friendship::create([

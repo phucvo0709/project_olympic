@@ -5,11 +5,12 @@
         <div class="fixed-sidebar">
             <div class="fixed-sidebar-left sidebar--small" id="sidebar-left">
 
-                <a href="02-ProfilePage.html" class="logo">
+
+                <router-link :to="{ name: 'timeline', params: { slug: authSlug }}" tag="a" active-class="active" class="logo">
                     <div class="img-wrap">
                         <img :src="'/img/logo.png'" alt="Olympus">
                     </div>
-                </a>
+                </router-link>
 
                 <div class="mCustomScrollbar" data-mcs-theme="dark">
                     <ul class="left-menu">
@@ -1595,7 +1596,7 @@
 
                     <div class="author-page author vcard inline-items more">
                         <div class="author-thumb">
-                            <img alt="author" style="width:36px; height:36px" :src="avatar" class="avatar">
+                            <img alt="author" style="width:36px; height:36px" :src="authAvatar" class="avatar">
                             <span class="icon-status online"></span>
                             <div class="more-dropdown more-with-triangle">
                                 <div class="mCustomScrollbar ps ps--theme_default ps--active-y" data-mcs-theme="dark"
@@ -1672,14 +1673,12 @@
 
                             </div>
                         </div>
-                        <router-link :to="{ name:'timeline', params: { slug: slug } }" tag="a" class="author-name fn">
                             <div class="author-title">
-                                {{name}}
+                                {{ authName }}
                                 <svg class="olymp-dropdown-arrow-icon">
                                     <use :href="'/svg-icons/sprites/icons.svg#olymp-dropdown-arrow-icon'"></use>
                                 </svg>
                             </div>
-                        </router-link>
                     </div>
 
                 </div>
@@ -2173,13 +2172,13 @@
                                     <div class="col-lg-5 col-md-5 ">
                                         <ul class="profile-menu">
                                             <li>
-                                                <router-link :to="{ name: 'timeline', params: { slug: slug }}" active-class="active" exact>Timeline</router-link>
+                                                <router-link :to="{ name: 'timeline', params: { slug: authSlug }}" active-class="active" exact>Timeline</router-link>
                                             </li>
                                             <li>
                                                 <router-link :to="{ name: 'about', params: { slug: slug }}" active-class="active">About</router-link>
                                             </li>
                                             <li>
-                                                <router-link :to="{ name: 'friends', params: { slug: slug }}" active-class="active">Friends</router-link>
+                                                <router-link :to="{ name: 'friends', params: { slug: authSlug }}" active-class="active">Friends</router-link>
                                             </li>
                                         </ul>
                                     </div>
@@ -2234,7 +2233,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="top-header-author">
+                            <div class="top-header-author" v-if="slug == authSlug">
+                                <router-link :to="{ name: 'avatar', params: { slug: authSlug }}" active-class="active" class="author-thumb">
+                                    <img style="max-width: 90px; max-height: 90px" :src="authAvatar" alt="author">
+                                </router-link>
+                                <div class="author-content">
+                                    <a class="h4 author-name">{{ authName }}</a>
+                                </div>
+                            </div>
+                            <div class="top-header-author" v-else>
                                 <router-link :to="{ name: 'avatar', params: { slug: slug }}" active-class="active" class="author-thumb">
                                     <img style="max-width: 90px; max-height: 90px" :src="avatar" alt="author">
                                 </router-link>
@@ -2255,11 +2262,13 @@
     export default {
         mounted: function(){
             this.$store.dispatch('getAuth')
-            this.$store.dispatch('getUser', this.slug)
         },
         computed: {
             ...mapGetters({
                 authId: 'authId',
+                authName: 'authName',
+                authAvatar: 'authAvatar',
+                authSlug: 'authSlug'
             }),
             avatar(){
                 return this.$store.getters.user.avatar;

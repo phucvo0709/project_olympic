@@ -17,5 +17,4 @@
         </head>
 
         <body>
-            <div id="app">
-                <vue-header></vue-header>
+        <div id="app">

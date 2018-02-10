@@ -13,8 +13,8 @@ class UserController extends Controller
         return response()->json([$user]);
     }
     public function getAuth(){
-        $id = Auth::user()->id;
-        return response()->json($id);
+        $auth = Auth::user()->where('id', Auth::user()->id)->get();
+        return response()->json($auth);
     }
     public function getUser($search){
         $user = User::where('name','LIKE',"%{$search}%")->get();
