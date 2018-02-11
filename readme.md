@@ -17,3 +17,9 @@
 6: php artisan migrate
 
 7: php artisan serve
+
+//Chức năng
+Update:
+- 11/2: 
+  + Complete Laravel and vuejs: login, login with facebook, register, forgot password
+  + Complete Laravel and vuejs: one-page router profile
