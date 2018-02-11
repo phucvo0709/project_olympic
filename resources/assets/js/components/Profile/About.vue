@@ -117,11 +117,6 @@
                                 <span class="text" v-else-if="user.gender == 0">Male</span>
                                 <span class="text" v-else>{{ empty }}</span>
                             </li>
-                            <li>
-                                <span class="title">Email:</span>
-                                <a href="#" class="text" v-if="user.email != null">{{ user.email }}</a>
-                                <span class="text" v-else>{{ empty }}</span>
-                            </li>
 
                             <li>
                                 <span class="title">Phone Number:</span>

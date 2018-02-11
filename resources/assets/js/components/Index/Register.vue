@@ -1,5 +1,5 @@
 <template>
-    <div class="tab-pane" id="register" role="tabpanel" data-mh="log-tab">
+    <div class="tab-pane active" id="register">
         <div class="title h6">Register to Olympus</div>
         <ul class="alert" :class="{'alert-success': alertSuccess != null }" v-if="alertSuccess != null">
             <p class="text-center">
@@ -29,10 +29,9 @@
                         <small v-if="errors.password" class="has-text-danger">{{errors.password[0]}}</small>
 
                     </div>
-
                     <div class="form-group label-floating is-select">
                         <label for="gender" class="control-label">Your Gender</label>
-                        <select id="gender" name="gender" class="selectpicker form-control" v-model="gender">
+                        <select id="gender" name="gender" class="form-control" v-model="gender">
                             <option value="1">Male</option>
                             <option value="0">Female</option>
                         </select>
@@ -77,33 +76,21 @@
             },
             attemptRegister() {
                 this.loading = true,
-                axios.post('/register', {
-                    name: this.name,
-                    email: this.email,
-                    password: this.password,
-                    gender: this.gender
-                    })
-                    .then(resp => {
+                    axios.post('/register', {
+                        name: this.name,
+                        email: this.email,
+                        password: this.password,
+                        gender: this.gender
+                    }).then(resp => {
                         this.alertSuccess = 'Register successfully waits for a moment'
-                        axios.get(`/user/${this.email}`)
-                            .then(resp => {
-                                this.slug = resp.data[0][0].slug
-                                location.href = `/profile/${this.slug}/about`
-                            })
-                    })
-                    .catch(error => {
-                       this.errors = error.response.data.errors
+                        location.href = `/timeline`
                     })
             }
         }
     }
 </script>
-
 <style scoped>
-    .is-danger{
-        border: 1px solid red;
-    }
-    .has-text-danger{
-        color: red;
+    select.form-control:not([size]):not([multiple]) {
+        height: calc(3.25rem + 2px) ;
     }
 </style>

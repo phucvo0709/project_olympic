@@ -6,7 +6,7 @@
             <div class="fixed-sidebar-left sidebar--small" id="sidebar-left">
 
 
-                <router-link :to="{ name: 'timeline', params: { slug: authSlug }}" tag="a" active-class="active" class="logo">
+                <router-link :to="{ name: 'timeline' }" tag="a" active-class="active" class="logo">
                     <div class="img-wrap">
                         <img :src="'/img/logo.png'" alt="Olympus">
                     </div>
@@ -2172,13 +2172,13 @@
                                     <div class="col-lg-5 col-md-5 ">
                                         <ul class="profile-menu">
                                             <li>
-                                                <router-link :to="{ name: 'timeline', params: { slug: authSlug }}" active-class="active" exact>Timeline</router-link>
+                                                <router-link :to="{ name: 'timeline' }" active-class="active" exact>Timeline</router-link>
                                             </li>
                                             <li>
                                                 <router-link :to="{ name: 'about', params: { slug: slug }}" active-class="active">About</router-link>
                                             </li>
                                             <li>
-                                                <router-link :to="{ name: 'friends', params: { slug: authSlug }}" active-class="active">Friends</router-link>
+                                                <router-link :to="{ name: 'friends' }" active-class="active">Friends</router-link>
                                             </li>
                                         </ul>
                                     </div>

@@ -11,47 +11,53 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'UserController@check');
+Route::get('/forgot', 'UserController@forgot');
 
 Auth::routes();
 
-Route::get('/home', function(){
-    return view('home');
-})->name('home');
-
 Route::group(['middleware' => 'auth'], function() {
-    Route::get('/user/{email}', 'UserController@index');
-    Route::get('/logout', function(){Auth::logout();return redirect('/login');});
-    Route::get('/timeline/{slug}', 'ProfileController@timeline');
-    Route::get('/profile/{slug}/about', 'ProfileController@about');
-    Route::get('/profile/{slug}/friends', 'ProfileController@friends');
-    Route::get('/profile/{slug}/photos', 'ProfileController@photos');
-    Route::get('/profile/{slug}/videos', 'ProfileController@videos');
-    Route::get('/profile/{slug}/avatar', 'ProfileController@avatar');
+    Route::get('/logout', 'UserController@logout');
+});
+
+Route::group(['prefix' => 'login'], function() {
+    Route::get('facebook', 'Auth\LoginController@redirectToProvider');
+    Route::get('facebook/callback', 'Auth\LoginController@handleProviderCallback');
+});
+
+Route::group(['prefix' => 'timeline', 'middleware' => 'auth'], function() {
+    //using vuex routes
+    Route::get('', 'ProfileController@myTimeline');
+    Route::get('{slug}', 'ProfileController@timeline');
+});
+
+Route::group(['prefix' => 'profile', 'middleware' => 'auth'], function() {
+    //using vuex routes
+    Route::get('{slug}', 'ProfileController@index');
+    Route::get('{slug}/about', 'ProfileController@about');
+    Route::get('{slug}/friends', 'ProfileController@friends');
+    Route::get('{slug}/photos', 'ProfileController@photos');
+    Route::get('{slug}/videos', 'ProfileController@videos');
+    Route::get('{slug}/avatar', 'ProfileController@avatar');
 });
 
 Route::group(['prefix' => 'api','middleware' => 'auth'], function() {
+
+    //Get info auth
     Route::get('getauth', 'UserController@getAuth');
+
+    //Get info User
     Route::get('getuser/{search}', 'UserController@getUser');
+
+    //Profile
     Route::get('getprofile/{slug}', 'ProfileController@apiGetProfile');
     Route::post('updateavatar', 'ProfileController@updateAvatar');
     Route::put('updateprofile', 'ProfileController@updateProfile');
-    Route::get('addfriend/{user_requested_id}', function($user_requested_id){
-        return Auth::user()->add_friend($user_requested_id);
-    });
-    Route::get('getpendingids', function(){
-        return Auth::user()->pending_friend_requests_sent_ids();
-    });
-    Route::get('getpendingto/{user_id}', function($user_id){
-        return Auth::user()->has_pending_friend_request_sent_to($user_id);
-    });
-    Route::delete('cancelrequest/{user_requested}', function($user_requested){
-        return Auth::user()->cancel_request_add_friend($user_requested);
-    });
-    Route::get('getpendingrequest', function(){
-        return Auth::user()->pending_friend_requests_sent();
-    });
+
+    //Button Add Friend
+    Route::get('addfriend/{user_requested_id}', 'UserController@addFriend');
+    Route::delete('cancelrequest/{user_requested}', 'UserController@cancelRequest');
+    Route::get('getpendingto/{user_id}', 'UserController@getPendingTo');
+    Route::get('getpendingrequest', 'UserController@getPendingRequest');
 });
 

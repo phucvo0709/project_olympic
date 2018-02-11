@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Input;
 
 class ProfileController extends Controller
 {
+    public function index(){
+        $userSlug = Auth::user()->slug;
+        return redirect('/profile/'.$userSlug.'/about');
+    }
+    public function myTimeline(){
+        $userSlug = Auth::user()->slug;
+        return redirect('/timeline/'.$userSlug);
+    }
     public function timeline($slug){
         $userSlug = Auth::user()->slug;
         if($userSlug == $slug){
@@ -83,21 +91,18 @@ class ProfileController extends Controller
 
         $fileImageDefault = "/img/avatar".Auth::user()->gender.".jpg";
 
-        if(strcmp($fileBaseUser,$fileImageDefault) != 0){
-            unlink(public_path() . Auth::user()->avatar);
-            Auth::user()->update(['avatar' => $fileName]);
+        if(file_exists ($fileBaseUser)){
+            if(strcmp($fileBaseUser,$fileImageDefault) != 0){
+                unlink(public_path() . Auth::user()->avatar);
+                Auth::user()->update(['avatar' => $fileName]);
+            }else{
+                Auth::user()->update(['avatar' => $fileName]);
+            }
         }else{
             Auth::user()->update(['avatar' => $fileName]);
         }
+
         return response()->json('Update Success');
-
-
-
-
     }
 
-    public function editAvatar(){
-        $avatar = Auth::user()->avatar;
-        return view('test', compact('avatar'));
-    }
 }
