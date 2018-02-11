@@ -18,7 +18,6 @@
 
 7: php artisan serve
 
-//Chức năng
 Update:
 - 11/2: 
   + Complete Laravel and vuejs: login, login with facebook, register, forgot password
