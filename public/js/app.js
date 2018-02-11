@@ -48259,6 +48259,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -48270,7 +48271,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             gender: 1,
             loading: false,
             slug: '',
+            success: false,
             alertSuccess: null,
+            alertError: null,
             errors: {}
         };
     },
@@ -48286,14 +48289,24 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         attemptRegister: function attemptRegister() {
             var _this = this;
 
-            this.loading = true, axios.post('/register', {
+            this.loading = true;
+            this.success = true;
+            this.alertSuccess = "Waiting";
+            axios.post('/register', {
                 name: this.name,
                 email: this.email,
                 password: this.password,
                 gender: this.gender
             }).then(function (resp) {
+                _this.alertError = null;
                 _this.alertSuccess = 'Register successfully waits for a moment';
                 location.href = '/timeline';
+            }).catch(function (error) {
+                _this.loading = false;
+                _this.success = false;
+                _this.alertSuccess = null;
+                _this.alertError = 'Error';
+                _this.errors = error.response.data.errors;
             });
         }
     }
@@ -48313,16 +48326,18 @@ var render = function() {
     [
       _c("div", { staticClass: "title h6" }, [_vm._v("Register to Olympus")]),
       _vm._v(" "),
-      _vm.alertSuccess != null
+      _vm.alertSuccess != null || _vm.alertError != null
         ? _c(
             "ul",
             {
               staticClass: "alert",
-              class: { "alert-success": _vm.alertSuccess != null }
+              class: [_vm.success ? "alert-success" : "alert-danger"]
             },
             [
               _c("p", { staticClass: "text-center" }, [
-                _c("span", [_vm._v(_vm._s(_vm.alertSuccess))])
+                _vm.alertSuccess
+                  ? _c("span", [_vm._v(_vm._s(_vm.alertSuccess))])
+                  : _c("span", [_vm._v(" " + _vm._s(_vm.alertError))])
               ])
             ]
           )
@@ -48519,7 +48534,22 @@ var render = function() {
                 ]
               ),
               _vm._v(" "),
-              _vm._m(0)
+              _c("div", { staticClass: "form-group" }, [
+                _c("div", { staticClass: "col-md-6 col-md-offset-4" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-primary",
+                      attrs: { type: "submit", disabled: _vm.loading }
+                    },
+                    [
+                      _vm._v(
+                        "\n                            Register\n                        "
+                      )
+                    ]
+                  )
+                ])
+              ])
             ])
           ])
         ]
@@ -48527,26 +48557,7 @@ var render = function() {
     ]
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "form-group" }, [
-      _c("div", { staticClass: "col-md-6 col-md-offset-4" }, [
-        _c(
-          "button",
-          { staticClass: "btn btn-primary", attrs: { type: "submit" } },
-          [
-            _vm._v(
-              "\n                            Register\n                        "
-            )
-          ]
-        )
-      ])
-    ])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {

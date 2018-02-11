@@ -1,9 +1,10 @@
 <template>
     <div class="tab-pane active" id="register">
         <div class="title h6">Register to Olympus</div>
-        <ul class="alert" :class="{'alert-success': alertSuccess != null }" v-if="alertSuccess != null">
+        <ul class="alert" :class="[(success) ? 'alert-success' : 'alert-danger']" v-if="alertSuccess != null || alertError != null">
             <p class="text-center">
-                <span>{{alertSuccess}}</span>
+                <span v-if="alertSuccess">{{alertSuccess}}</span>
+                <span v-else> {{alertError}}</span>
             </p>
         </ul>
         <form class="content" v-on:submit.prevent="attemptRegister()">
@@ -38,7 +39,7 @@
                     </div>
                     <div class="form-group">
                         <div class="col-md-6 col-md-offset-4">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" :disabled="loading">
                                 Register
                             </button>
                         </div>
@@ -61,7 +62,9 @@
                 gender: 1,
                 loading: false,
                 slug: '',
+                success: false,
                 alertSuccess: null,
+                alertError: null,
                 errors: {}
             }
         },
@@ -75,16 +78,26 @@
                 }
             },
             attemptRegister() {
-                this.loading = true,
+                    this.loading = true
+                    this.success = true
+                    this.alertSuccess = "Waiting"
                     axios.post('/register', {
                         name: this.name,
                         email: this.email,
                         password: this.password,
                         gender: this.gender
                     }).then(resp => {
+                        this.alertError = null
                         this.alertSuccess = 'Register successfully waits for a moment'
                         location.href = `/timeline`
+                    }).catch(error => {
+                        this.loading = false
+                        this.success = false
+                        this.alertSuccess = null
+                        this.alertError = 'Error'
+                        this.errors = error.response.data.errors
                     })
+
             }
         }
     }

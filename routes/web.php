@@ -12,6 +12,7 @@
 */
 
 Route::get('/', 'UserController@check');
+Route::get('/login', 'LoginController@login');
 Route::get('/forgot', 'UserController@forgot');
 
 Auth::routes();
