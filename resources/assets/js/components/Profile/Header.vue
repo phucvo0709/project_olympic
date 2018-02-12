@@ -5,7 +5,6 @@
         <div class="fixed-sidebar">
             <div class="fixed-sidebar-left sidebar--small" id="sidebar-left">
 
-
                 <router-link :to="{ name: 'timeline' }" tag="a" active-class="active" class="logo">
                     <div class="img-wrap">
                         <img :src="'/img/logo.png'" alt="Olympus">
@@ -1122,39 +1121,7 @@
                 <h6>Profile Page</h6>
             </div>
             <div class="header-content-wrapper">
-                <form class="search-bar w-search notification-list friend-requests">
-                    <div class="form-group with-button is-empty">
-                        <div class="selectize-control form-control js-user-search multi">
-                            <div class="selectize-input items not-full has-options input-active dropdown-active">
-                                <input
-                                        type="text" autocomplete="off" tabindex=""
-                                        placeholder="Pc search"
-                                        style="width: 229.863px; opacity: 1; position: relative; left: 0px;" @keyup="getUser"></div>
-                            <div class="selectize-dropdown multi form-control js-user-search"
-                                 style="display: none; width: 500px; top: 70px; left: 0px; visibility: visible;">
-                                <div class="selectize-dropdown-content" v-if="notFoundFriend">
-                                    <div class="inline-items" data-selectable="" data-value="Marie Claire Stevens">
-                                        <h1 style="text-align:center">{{ notFoundStatus }}</h1>
-                                    </div>
-                                </div>
-                                <div class="selectize-dropdown-content" v-else v-for="friend in friends">
-                                    <a :href="'/profile/'+ friend.slug + '/about'">
-                                        <div class="inline-items" data-selectable="" data-value="Marie Claire Stevens">
-                                            <div class="author-thumb"><img style="width:42px; height:42px" :src="friend.avatar" alt="avatar"></div>
-                                            <div class="notification-event"><span class="h6 notification-friend">{{friend.name}}</span><span
-                                                    class="chat-message-item">12 Friends in Common</span></div>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <button>
-                            <svg class="olymp-magnifying-glass-icon">
-                                <use :href="'/svg-icons/sprites/icons.svg#olymp-magnifying-glass-icon'"></use>
-                            </svg>
-                        </button>
-                        <span class="material-input"></span></div>
-                </form>
+                <vue-search-friend></vue-search-friend>
 
                 <a href="#" class="link-find-friend">Find Friends</a>
 
@@ -2121,34 +2088,7 @@
                 </div>
 
                 <div class="tab-pane " id="search" role="tabpanel">
-
-
-                    <form class="search-bar w-search notification-list friend-requests">
-                        <div class="form-group with-button">
-                            <input class="form-control js-user-search" placeholder="Mobile search" type="text" @keyup="getUser">
-                        </div>
-                        <div class="selectize-control form-control js-user-search multi">
-                            <div class="selectize-dropdown multi form-control js-user-search"
-                                 style="display: none; width: 500px; top: 70px; left: 0px; visibility: visible;">
-                                <div class="selectize-dropdown-content" v-if="notFoundFriend">
-                                    <div class="inline-items" data-selectable="" data-value="Marie Claire Stevens">
-                                        <h1 style="text-align:center">{{ notFoundStatus }}</h1>
-                                    </div>
-                                </div>
-                                <div class="selectize-dropdown-content" v-else v-for="friend in friends">
-                                    <a :href="'/profile/'+ friend.slug + '/about'">
-                                        <div class="inline-items" data-selectable="" data-value="Marie Claire Stevens">
-                                            <div class="author-thumb"><img style="width:42px; height:42px" :src="friend.avatar" alt="avatar"></div>
-                                            <div class="notification-event"><span class="h6 notification-friend">{{friend.name}}</span><span
-                                                    class="chat-message-item">12 Friends in Common</span></div>
-                                            <span class="notification-icon"><svg class="olymp-happy-face-icon"><use
-                                                    :href="'/icons/icons.svg#olymp-happy-face-icon'"></use></svg></span>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+                    <vue-search-friend></vue-search-friend>
                 </div>
 
             </div>
@@ -2262,13 +2202,14 @@
     export default {
         mounted: function(){
             this.$store.dispatch('getAuth')
+
         },
         computed: {
             ...mapGetters({
                 authId: 'authId',
                 authName: 'authName',
                 authAvatar: 'authAvatar',
-                authSlug: 'authSlug'
+                authSlug: 'authSlug',
             }),
             avatar(){
                 return this.$store.getters.user.avatar;
@@ -2280,33 +2221,10 @@
                 return this.$route.params.slug
             }
         },
-        data() {
-            return {
-                friends: [],
-                notFoundFriend: true,
-                notFoundStatus: "Not Found",
-            }
+        components: {
+            'vue-search-friend': require('./SearchFriend')
         },
         methods: {
-            getUser: function(e){
-                var dropdown = $('.selectize-dropdown')
-                dropdown.css('display', 'block')
-                dropdown.mouseleave(function () {
-                    dropdown.css('display', 'none')
-                })
-                axios.get(`/api/getuser/${e.key}`)
-                    .then(resp =>{
-                        if(jQuery.isEmptyObject(resp.data) == false) {
-                            this.friends = resp.data
-                            this.notFoundFriend = false
-                            this.notFoundStatus = ""
-                        }else{
-                            this.friends = []
-                            this.notFoundFriend = true
-                            this.notFoundStatus = "Not Found"
-                        }
-                    })
-            },
             addFriend: function(){
 
             }

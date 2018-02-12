@@ -566,234 +566,6 @@ function toComment(sourceMap) {
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/*
-  MIT License http://www.opensource.org/licenses/mit-license.php
-  Author Tobias Koppers @sokra
-  Modified by Evan You @yyx990803
-*/
-
-var hasDocument = typeof document !== 'undefined'
-
-if (typeof DEBUG !== 'undefined' && DEBUG) {
-  if (!hasDocument) {
-    throw new Error(
-    'vue-style-loader cannot be used in a non-browser environment. ' +
-    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
-  ) }
-}
-
-var listToStyles = __webpack_require__(62)
-
-/*
-type StyleObject = {
-  id: number;
-  parts: Array<StyleObjectPart>
-}
-
-type StyleObjectPart = {
-  css: string;
-  media: string;
-  sourceMap: ?string
-}
-*/
-
-var stylesInDom = {/*
-  [id: number]: {
-    id: number,
-    refs: number,
-    parts: Array<(obj?: StyleObjectPart) => void>
-  }
-*/}
-
-var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
-var singletonElement = null
-var singletonCounter = 0
-var isProduction = false
-var noop = function () {}
-var options = null
-var ssrIdKey = 'data-vue-ssr-id'
-
-// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-// tags it will allow on a page
-var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
-
-module.exports = function (parentId, list, _isProduction, _options) {
-  isProduction = _isProduction
-
-  options = _options || {}
-
-  var styles = listToStyles(parentId, list)
-  addStylesToDom(styles)
-
-  return function update (newList) {
-    var mayRemove = []
-    for (var i = 0; i < styles.length; i++) {
-      var item = styles[i]
-      var domStyle = stylesInDom[item.id]
-      domStyle.refs--
-      mayRemove.push(domStyle)
-    }
-    if (newList) {
-      styles = listToStyles(parentId, newList)
-      addStylesToDom(styles)
-    } else {
-      styles = []
-    }
-    for (var i = 0; i < mayRemove.length; i++) {
-      var domStyle = mayRemove[i]
-      if (domStyle.refs === 0) {
-        for (var j = 0; j < domStyle.parts.length; j++) {
-          domStyle.parts[j]()
-        }
-        delete stylesInDom[domStyle.id]
-      }
-    }
-  }
-}
-
-function addStylesToDom (styles /* Array<StyleObject> */) {
-  for (var i = 0; i < styles.length; i++) {
-    var item = styles[i]
-    var domStyle = stylesInDom[item.id]
-    if (domStyle) {
-      domStyle.refs++
-      for (var j = 0; j < domStyle.parts.length; j++) {
-        domStyle.parts[j](item.parts[j])
-      }
-      for (; j < item.parts.length; j++) {
-        domStyle.parts.push(addStyle(item.parts[j]))
-      }
-      if (domStyle.parts.length > item.parts.length) {
-        domStyle.parts.length = item.parts.length
-      }
-    } else {
-      var parts = []
-      for (var j = 0; j < item.parts.length; j++) {
-        parts.push(addStyle(item.parts[j]))
-      }
-      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
-    }
-  }
-}
-
-function createStyleElement () {
-  var styleElement = document.createElement('style')
-  styleElement.type = 'text/css'
-  head.appendChild(styleElement)
-  return styleElement
-}
-
-function addStyle (obj /* StyleObjectPart */) {
-  var update, remove
-  var styleElement = document.querySelector('style[' + ssrIdKey + '~="' + obj.id + '"]')
-
-  if (styleElement) {
-    if (isProduction) {
-      // has SSR styles and in production mode.
-      // simply do nothing.
-      return noop
-    } else {
-      // has SSR styles but in dev mode.
-      // for some reason Chrome can't handle source map in server-rendered
-      // style tags - source maps in <style> only works if the style tag is
-      // created and inserted dynamically. So we remove the server rendered
-      // styles and inject new ones.
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  if (isOldIE) {
-    // use singleton mode for IE9.
-    var styleIndex = singletonCounter++
-    styleElement = singletonElement || (singletonElement = createStyleElement())
-    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
-    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
-  } else {
-    // use multi-style-tag mode in all other cases
-    styleElement = createStyleElement()
-    update = applyToTag.bind(null, styleElement)
-    remove = function () {
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  update(obj)
-
-  return function updateStyle (newObj /* StyleObjectPart */) {
-    if (newObj) {
-      if (newObj.css === obj.css &&
-          newObj.media === obj.media &&
-          newObj.sourceMap === obj.sourceMap) {
-        return
-      }
-      update(obj = newObj)
-    } else {
-      remove()
-    }
-  }
-}
-
-var replaceText = (function () {
-  var textStore = []
-
-  return function (index, replacement) {
-    textStore[index] = replacement
-    return textStore.filter(Boolean).join('\n')
-  }
-})()
-
-function applyToSingletonTag (styleElement, index, remove, obj) {
-  var css = remove ? '' : obj.css
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = replaceText(index, css)
-  } else {
-    var cssNode = document.createTextNode(css)
-    var childNodes = styleElement.childNodes
-    if (childNodes[index]) styleElement.removeChild(childNodes[index])
-    if (childNodes.length) {
-      styleElement.insertBefore(cssNode, childNodes[index])
-    } else {
-      styleElement.appendChild(cssNode)
-    }
-  }
-}
-
-function applyToTag (styleElement, obj) {
-  var css = obj.css
-  var media = obj.media
-  var sourceMap = obj.sourceMap
-
-  if (media) {
-    styleElement.setAttribute('media', media)
-  }
-  if (options.ssrId) {
-    styleElement.setAttribute(ssrIdKey, obj.id)
-  }
-
-  if (sourceMap) {
-    // https://developer.chrome.com/devtools/docs/javascript-debugging
-    // this makes source maps inside style tags work properly in Chrome
-    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
-    // http://stackoverflow.com/a/26603875
-    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
-  }
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = css
-  } else {
-    while (styleElement.firstChild) {
-      styleElement.removeChild(styleElement.firstChild)
-    }
-    styleElement.appendChild(document.createTextNode(css))
-  }
-}
-
-
-/***/ }),
-/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1735,6 +1507,234 @@ var index_esm = {
 
 
 /* harmony default export */ __webpack_exports__["a"] = (index_esm);
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+  Modified by Evan You @yyx990803
+*/
+
+var hasDocument = typeof document !== 'undefined'
+
+if (typeof DEBUG !== 'undefined' && DEBUG) {
+  if (!hasDocument) {
+    throw new Error(
+    'vue-style-loader cannot be used in a non-browser environment. ' +
+    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
+  ) }
+}
+
+var listToStyles = __webpack_require__(62)
+
+/*
+type StyleObject = {
+  id: number;
+  parts: Array<StyleObjectPart>
+}
+
+type StyleObjectPart = {
+  css: string;
+  media: string;
+  sourceMap: ?string
+}
+*/
+
+var stylesInDom = {/*
+  [id: number]: {
+    id: number,
+    refs: number,
+    parts: Array<(obj?: StyleObjectPart) => void>
+  }
+*/}
+
+var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
+var singletonElement = null
+var singletonCounter = 0
+var isProduction = false
+var noop = function () {}
+var options = null
+var ssrIdKey = 'data-vue-ssr-id'
+
+// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+// tags it will allow on a page
+var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
+
+module.exports = function (parentId, list, _isProduction, _options) {
+  isProduction = _isProduction
+
+  options = _options || {}
+
+  var styles = listToStyles(parentId, list)
+  addStylesToDom(styles)
+
+  return function update (newList) {
+    var mayRemove = []
+    for (var i = 0; i < styles.length; i++) {
+      var item = styles[i]
+      var domStyle = stylesInDom[item.id]
+      domStyle.refs--
+      mayRemove.push(domStyle)
+    }
+    if (newList) {
+      styles = listToStyles(parentId, newList)
+      addStylesToDom(styles)
+    } else {
+      styles = []
+    }
+    for (var i = 0; i < mayRemove.length; i++) {
+      var domStyle = mayRemove[i]
+      if (domStyle.refs === 0) {
+        for (var j = 0; j < domStyle.parts.length; j++) {
+          domStyle.parts[j]()
+        }
+        delete stylesInDom[domStyle.id]
+      }
+    }
+  }
+}
+
+function addStylesToDom (styles /* Array<StyleObject> */) {
+  for (var i = 0; i < styles.length; i++) {
+    var item = styles[i]
+    var domStyle = stylesInDom[item.id]
+    if (domStyle) {
+      domStyle.refs++
+      for (var j = 0; j < domStyle.parts.length; j++) {
+        domStyle.parts[j](item.parts[j])
+      }
+      for (; j < item.parts.length; j++) {
+        domStyle.parts.push(addStyle(item.parts[j]))
+      }
+      if (domStyle.parts.length > item.parts.length) {
+        domStyle.parts.length = item.parts.length
+      }
+    } else {
+      var parts = []
+      for (var j = 0; j < item.parts.length; j++) {
+        parts.push(addStyle(item.parts[j]))
+      }
+      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
+    }
+  }
+}
+
+function createStyleElement () {
+  var styleElement = document.createElement('style')
+  styleElement.type = 'text/css'
+  head.appendChild(styleElement)
+  return styleElement
+}
+
+function addStyle (obj /* StyleObjectPart */) {
+  var update, remove
+  var styleElement = document.querySelector('style[' + ssrIdKey + '~="' + obj.id + '"]')
+
+  if (styleElement) {
+    if (isProduction) {
+      // has SSR styles and in production mode.
+      // simply do nothing.
+      return noop
+    } else {
+      // has SSR styles but in dev mode.
+      // for some reason Chrome can't handle source map in server-rendered
+      // style tags - source maps in <style> only works if the style tag is
+      // created and inserted dynamically. So we remove the server rendered
+      // styles and inject new ones.
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  if (isOldIE) {
+    // use singleton mode for IE9.
+    var styleIndex = singletonCounter++
+    styleElement = singletonElement || (singletonElement = createStyleElement())
+    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
+    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
+  } else {
+    // use multi-style-tag mode in all other cases
+    styleElement = createStyleElement()
+    update = applyToTag.bind(null, styleElement)
+    remove = function () {
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  update(obj)
+
+  return function updateStyle (newObj /* StyleObjectPart */) {
+    if (newObj) {
+      if (newObj.css === obj.css &&
+          newObj.media === obj.media &&
+          newObj.sourceMap === obj.sourceMap) {
+        return
+      }
+      update(obj = newObj)
+    } else {
+      remove()
+    }
+  }
+}
+
+var replaceText = (function () {
+  var textStore = []
+
+  return function (index, replacement) {
+    textStore[index] = replacement
+    return textStore.filter(Boolean).join('\n')
+  }
+})()
+
+function applyToSingletonTag (styleElement, index, remove, obj) {
+  var css = remove ? '' : obj.css
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = replaceText(index, css)
+  } else {
+    var cssNode = document.createTextNode(css)
+    var childNodes = styleElement.childNodes
+    if (childNodes[index]) styleElement.removeChild(childNodes[index])
+    if (childNodes.length) {
+      styleElement.insertBefore(cssNode, childNodes[index])
+    } else {
+      styleElement.appendChild(cssNode)
+    }
+  }
+}
+
+function applyToTag (styleElement, obj) {
+  var css = obj.css
+  var media = obj.media
+  var sourceMap = obj.sourceMap
+
+  if (media) {
+    styleElement.setAttribute('media', media)
+  }
+  if (options.ssrId) {
+    styleElement.setAttribute(ssrIdKey, obj.id)
+  }
+
+  if (sourceMap) {
+    // https://developer.chrome.com/devtools/docs/javascript-debugging
+    // this makes source maps inside style tags work properly in Chrome
+    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
+    // http://stackoverflow.com/a/26603875
+    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
+  }
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = css
+  } else {
+    while (styleElement.firstChild) {
+      styleElement.removeChild(styleElement.firstChild)
+    }
+    styleElement.appendChild(document.createTextNode(css))
+  }
+}
 
 
 /***/ }),
@@ -13217,7 +13217,7 @@ module.exports = Cancel;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(17);
-module.exports = __webpack_require__(121);
+module.exports = __webpack_require__(124);
 
 
 /***/ }),
@@ -44821,7 +44821,7 @@ module.exports = function (css) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vuex__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vuex__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__modules_auth__ = __webpack_require__(48);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__modules_about__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__modules_avatar__ = __webpack_require__(50);
@@ -45006,6 +45006,7 @@ var getters = {
 
 "use strict";
 var state = {
+    friendSearch: [],
     penddingFriends: [],
 
     from: null,
@@ -45019,10 +45020,21 @@ var state = {
     totalPageArr: []
 };
 var actions = {
-    getpendingFriends: function getpendingFriends(_ref) {
+    getFriendSearch: function getFriendSearch(_ref, key) {
         var commit = _ref.commit;
 
-        axios.get('http://olympic.test/api/getpendingrequest').then(function (resp) {
+        axios.get('/api/getuser/' + key).then(function (resp) {
+            if (resp.data === false) {
+                commit('GET_FRIENDSEARCH', []);
+            } else {
+                commit('GET_FRIENDSEARCH', resp.data);
+            }
+        });
+    },
+    getpendingFriends: function getpendingFriends(_ref2) {
+        var commit = _ref2.commit;
+
+        axios.get('/api/getpendingrequest').then(function (resp) {
             var data = resp.data.data;
 
             //Data friends
@@ -45063,8 +45075,8 @@ var actions = {
             commit('GET_TOTALPAGEARR', totalPageArr);
         });
     },
-    getActionPagination: function getActionPagination(_ref2, url) {
-        var commit = _ref2.commit;
+    getActionPagination: function getActionPagination(_ref3, url) {
+        var commit = _ref3.commit;
 
         axios.get(url).then(function (resp) {
             var data = resp.data.data;
@@ -45106,6 +45118,9 @@ var actions = {
 };
 
 var mutations = {
+    'GET_FRIENDSEARCH': function GET_FRIENDSEARCH(state, friendSearch) {
+        state.friendSearch = friendSearch;
+    },
     'GET_PENDDING_FRIENDS': function GET_PENDDING_FRIENDS(state, penddingFriends) {
         state.penddingFriends = penddingFriends;
     },
@@ -45139,6 +45154,9 @@ var mutations = {
 };
 
 var getters = {
+    friendSearch: function friendSearch(state) {
+        return state.friendSearch;
+    },
     penddingFriends: function penddingFriends(state) {
         return state.penddingFriends;
     },
@@ -48281,7 +48299,7 @@ var content = __webpack_require__(61);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(3)("d6b700ec", content, false, {});
+var update = __webpack_require__(4)("d6b700ec", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -49188,7 +49206,7 @@ module.exports = Component.exports
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(3);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 //
@@ -49346,15 +49364,15 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             return this.$store.getters.userId;
         }
     }),
+    components: {
+        'edit-form': __webpack_require__(73)
+    },
     data: function data() {
         return {
             empty: 'Empty'
         };
     },
 
-    components: {
-        'edit-form': __webpack_require__(73)
-    },
     methods: {
         addFriend: function addFriend(userId) {
             this.$store.dispatch('addFriend', userId);
@@ -49424,7 +49442,7 @@ var content = __webpack_require__(75);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(3)("46fde217", content, false, {});
+var update = __webpack_require__(4)("46fde217", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -50296,7 +50314,7 @@ var content = __webpack_require__(81);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(3)("3518dfb6", content, false, {});
+var update = __webpack_require__(4)("3518dfb6", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -50331,7 +50349,7 @@ exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(3);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 //
@@ -50590,7 +50608,7 @@ var content = __webpack_require__(85);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(3)("aae5136c", content, false, {});
+var update = __webpack_require__(4)("aae5136c", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -50625,7 +50643,7 @@ exports.push([module.i, "\n.page-link[data-v-201a581f]{\n    color: #ff5e3a !imp
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(3);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 //
@@ -50698,142 +50716,156 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "text-center" }, [
-    _c("div", { staticClass: "d-flex justify-content-center" }, [
-      _c(
-        "ul",
-        { staticClass: "pagination" },
-        [
-          _c("li", { staticClass: "page-item" }, [
-            _c(
-              "a",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.currentPage != 1,
-                    expression: "currentPage != 1"
-                  }
-                ],
-                staticClass: "page-link",
-                on: {
-                  click: function($event) {
-                    _vm.actionPagination(_vm.firstPageUrl)
-                  }
-                }
-              },
-              [_vm._v("First")]
-            )
-          ]),
-          _vm._v(" "),
-          _c("li", { staticClass: "page-item" }, [
-            _c(
-              "a",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.currentPage != 1,
-                    expression: "currentPage != 1"
-                  }
-                ],
-                staticClass: "page-link",
-                attrs: { disabled: _vm.prevPageUrl == null },
-                on: {
-                  click: function($event) {
-                    _vm.actionPagination(_vm.prevPageUrl)
-                  }
-                }
-              },
-              [_vm._v("Prev")]
-            )
-          ]),
-          _vm._v(" "),
-          _vm._l(_vm.totalPageArr, function(page) {
-            return _c("li", { staticClass: "page-item" }, [
+  return _c(
+    "div",
+    {
+      directives: [
+        {
+          name: "show",
+          rawName: "v-show",
+          value: _vm.total !== 0,
+          expression: "total !== 0"
+        }
+      ],
+      staticClass: "text-center"
+    },
+    [
+      _c("div", { staticClass: "d-flex justify-content-center" }, [
+        _c(
+          "ul",
+          { staticClass: "pagination" },
+          [
+            _c("li", { staticClass: "page-item" }, [
               _c(
                 "a",
                 {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: _vm.currentPage != 1,
+                      expression: "currentPage != 1"
+                    }
+                  ],
                   staticClass: "page-link",
-                  class: _vm.currentPage === page ? "disabled" : "",
-                  attrs: { disabled: _vm.currentPage === page },
                   on: {
                     click: function($event) {
-                      _vm.actionPaginationParams(_vm.urlPagination, page)
+                      _vm.actionPagination(_vm.firstPageUrl)
                     }
                   }
                 },
-                [_vm._v(_vm._s(page))]
+                [_vm._v("First")]
+              )
+            ]),
+            _vm._v(" "),
+            _c("li", { staticClass: "page-item" }, [
+              _c(
+                "a",
+                {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: _vm.currentPage != 1,
+                      expression: "currentPage != 1"
+                    }
+                  ],
+                  staticClass: "page-link",
+                  attrs: { disabled: _vm.prevPageUrl == null },
+                  on: {
+                    click: function($event) {
+                      _vm.actionPagination(_vm.prevPageUrl)
+                    }
+                  }
+                },
+                [_vm._v("Prev")]
+              )
+            ]),
+            _vm._v(" "),
+            _vm._l(_vm.totalPageArr, function(page) {
+              return _c("li", { staticClass: "page-item" }, [
+                _c(
+                  "a",
+                  {
+                    staticClass: "page-link",
+                    class: _vm.currentPage === page ? "disabled" : "",
+                    attrs: { disabled: _vm.currentPage === page },
+                    on: {
+                      click: function($event) {
+                        _vm.actionPaginationParams(_vm.urlPagination, page)
+                      }
+                    }
+                  },
+                  [_vm._v(_vm._s(page))]
+                )
+              ])
+            }),
+            _vm._v(" "),
+            _c("li", { staticClass: "page-item" }, [
+              _c(
+                "a",
+                {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: _vm.to !== _vm.total,
+                      expression: "to !== total"
+                    }
+                  ],
+                  staticClass: "page-link",
+                  class: _vm.nextPageUrl == null ? "disabled" : "",
+                  attrs: { disabled: _vm.nextPageUrl == null },
+                  on: {
+                    click: function($event) {
+                      _vm.actionPagination(_vm.nextPageUrl)
+                    }
+                  }
+                },
+                [_vm._v("Next")]
+              )
+            ]),
+            _vm._v(" "),
+            _c("li", { staticClass: "page-item" }, [
+              _c(
+                "a",
+                {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: _vm.to !== _vm.total,
+                      expression: "to !== total"
+                    }
+                  ],
+                  staticClass: "page-link",
+                  on: {
+                    click: function($event) {
+                      _vm.actionPagination(_vm.lastPageUrl)
+                    }
+                  }
+                },
+                [_vm._v("Last")]
               )
             ])
-          }),
-          _vm._v(" "),
-          _c("li", { staticClass: "page-item" }, [
-            _c(
-              "a",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.to !== _vm.total,
-                    expression: "to !== total"
-                  }
-                ],
-                staticClass: "page-link",
-                class: _vm.nextPageUrl == null ? "disabled" : "",
-                attrs: { disabled: _vm.nextPageUrl == null },
-                on: {
-                  click: function($event) {
-                    _vm.actionPagination(_vm.nextPageUrl)
-                  }
-                }
-              },
-              [_vm._v("Next")]
-            )
-          ]),
-          _vm._v(" "),
-          _c("li", { staticClass: "page-item" }, [
-            _c(
-              "a",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.to !== _vm.total,
-                    expression: "to !== total"
-                  }
-                ],
-                staticClass: "page-link",
-                on: {
-                  click: function($event) {
-                    _vm.actionPagination(_vm.lastPageUrl)
-                  }
-                }
-              },
-              [_vm._v("Last")]
-            )
-          ])
-        ],
-        2
-      )
-    ]),
-    _vm._v(" "),
-    _c("p", [
-      _vm._v(
-        "watch from " +
-          _vm._s(_vm.from) +
-          " to " +
-          _vm._s(_vm.to) +
-          " total " +
-          _vm._s(_vm.total) +
-          " friend pending request"
-      )
-    ])
-  ])
+          ],
+          2
+        )
+      ]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "watch from " +
+            _vm._s(_vm.from) +
+            " to " +
+            _vm._s(_vm.to) +
+            " total " +
+            _vm._s(_vm.total) +
+            " friend pending request"
+        )
+      ])
+    ]
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -51033,7 +51065,12 @@ var render = function() {
                                   "router-link",
                                   {
                                     staticClass: "h5 author-name",
-                                    attrs: { to: { name: "about" } }
+                                    attrs: {
+                                      to: {
+                                        name: "about",
+                                        params: { slug: pendingFriend.slug }
+                                      }
+                                    }
                                   },
                                   [_vm._v(_vm._s(pendingFriend.name))]
                                 )
@@ -63692,7 +63729,7 @@ var content = __webpack_require__(97);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(3)("67478576", content, false, {});
+var update = __webpack_require__(4)("67478576", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -65287,7 +65324,7 @@ module.exports = Component.exports
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(3);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 //
@@ -65520,7 +65557,7 @@ var content = __webpack_require__(105);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(3)("5d7ecbd2", content, false, {});
+var update = __webpack_require__(4)("5d7ecbd2", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -65828,7 +65865,7 @@ var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(111)
 /* template */
-var __vue_template__ = __webpack_require__(120)
+var __vue_template__ = __webpack_require__(123)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -65886,7 +65923,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony default export */ __webpack_exports__["default"] = ({
     components: {
         'vue-header': __webpack_require__(112),
-        'vue-chat': __webpack_require__(115)
+        'vue-chat': __webpack_require__(118)
     }
 });
 
@@ -65899,7 +65936,7 @@ var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(113)
 /* template */
-var __vue_template__ = __webpack_require__(114)
+var __vue_template__ = __webpack_require__(117)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -65943,69 +65980,9 @@ module.exports = Component.exports
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(3);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -68227,41 +68204,283 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             return this.$route.params.slug;
         }
     }),
-    data: function data() {
-        return {
-            friends: [],
-            notFoundFriend: true,
-            notFoundStatus: "Not Found"
-        };
+    components: {
+        'vue-search-friend': __webpack_require__(114)
     },
-
     methods: {
-        getUser: function getUser(e) {
-            var _this = this;
-
-            var dropdown = $('.selectize-dropdown');
-            dropdown.css('display', 'block');
-            dropdown.mouseleave(function () {
-                dropdown.css('display', 'none');
-            });
-            axios.get('/api/getuser/' + e.key).then(function (resp) {
-                if (jQuery.isEmptyObject(resp.data) == false) {
-                    _this.friends = resp.data;
-                    _this.notFoundFriend = false;
-                    _this.notFoundStatus = "";
-                } else {
-                    _this.friends = [];
-                    _this.notFoundFriend = true;
-                    _this.notFoundStatus = "Not Found";
-                }
-            });
-        },
         addFriend: function addFriend() {}
     }
 });
 
 /***/ }),
 /* 114 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(0)
+/* script */
+var __vue_script__ = __webpack_require__(115)
+/* template */
+var __vue_template__ = __webpack_require__(116)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\Profile\\SearchFriend.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-20bc1550", Component.options)
+  } else {
+    hotAPI.reload("data-v-20bc1550", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 115 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(3);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["b" /* mapGetters */])({
+        friendSearch: 'friendSearch'
+    })),
+    data: function data() {
+        return {
+            key: ''
+        };
+    },
+
+    methods: {
+
+        hide: function hide() {
+            $('.selectize-dropdown').css('display', 'none');
+        },
+        findFriend: function findFriend() {
+            var dropdown = $('.selectize-dropdown');
+            dropdown.css('display', 'block');
+            dropdown.mouseleave(function () {
+                dropdown.css('display', 'none');
+            });
+            if (this.key.length === 0) {
+                this.$store.commit('GET_FRIENDSEARCH', []);
+            } else if (this.key.length > 2) {
+                this.$store.dispatch('getFriendSearch', this.key);
+            }
+        }
+    }
+});
+
+/***/ }),
+/* 116 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c(
+      "form",
+      { staticClass: "search-bar w-search notification-list friend-requests" },
+      [
+        _c("div", { staticClass: "form-group with-button is-empty" }, [
+          _c(
+            "div",
+            {
+              staticClass: "selectize-control form-control js-user-search multi"
+            },
+            [
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "selectize-input items not-full has-options input-active dropdown-active"
+                },
+                [
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.key,
+                        expression: "key"
+                      }
+                    ],
+                    staticStyle: {
+                      width: "229.863px",
+                      opacity: "1",
+                      position: "relative",
+                      left: "0px"
+                    },
+                    attrs: {
+                      type: "text",
+                      autocomplete: "off",
+                      tabindex: "",
+                      placeholder: "Pc search"
+                    },
+                    domProps: { value: _vm.key },
+                    on: {
+                      keyup: _vm.findFriend,
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.key = $event.target.value
+                      }
+                    }
+                  })
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "selectize-dropdown multi form-control js-user-search",
+                  staticStyle: {
+                    display: "none",
+                    width: "500px",
+                    top: "70px",
+                    left: "0px",
+                    visibility: "visible"
+                  }
+                },
+                _vm._l(_vm.friendSearch, function(friend) {
+                  return _c(
+                    "div",
+                    { staticClass: "selectize-dropdown-content" },
+                    [
+                      _c(
+                        "a",
+                        {
+                          attrs: { href: "/profile/" + friend.slug + "/about" },
+                          on: { click: _vm.hide }
+                        },
+                        [
+                          _c("div", { staticClass: "author-thumb" }, [
+                            _c("img", {
+                              staticStyle: { width: "42px", height: "42px" },
+                              attrs: { src: friend.avatar, alt: "avatar" }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "notification-event" }, [
+                            _c(
+                              "span",
+                              { staticClass: "h6 notification-friend" },
+                              [_vm._v(_vm._s(friend.name))]
+                            ),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "chat-message-item" }, [
+                              _vm._v("Hello")
+                            ])
+                          ])
+                        ]
+                      )
+                    ]
+                  )
+                })
+              )
+            ]
+          ),
+          _vm._v(" "),
+          _c("button", [
+            _c("svg", { staticClass: "olymp-magnifying-glass-icon" }, [
+              _c("use", {
+                attrs: {
+                  href:
+                    "/svg-icons/sprites/icons.svg#olymp-magnifying-glass-icon"
+                }
+              })
+            ])
+          ])
+        ])
+      ]
+    )
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-20bc1550", module.exports)
+  }
+}
+
+/***/ }),
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -70756,276 +70975,699 @@ var render = function() {
     _c("header", { staticClass: "header", attrs: { id: "site-header" } }, [
       _vm._m(22),
       _vm._v(" "),
-      _c("div", { staticClass: "header-content-wrapper" }, [
-        _c(
-          "form",
-          {
-            staticClass: "search-bar w-search notification-list friend-requests"
-          },
-          [
-            _c("div", { staticClass: "form-group with-button is-empty" }, [
+      _c(
+        "div",
+        { staticClass: "header-content-wrapper" },
+        [
+          _c("vue-search-friend"),
+          _vm._v(" "),
+          _c("a", { staticClass: "link-find-friend", attrs: { href: "#" } }, [
+            _vm._v("Find Friends")
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "control-block" }, [
+            _c("div", { staticClass: "control-icon more has-items" }, [
+              _c("svg", { staticClass: "olymp-happy-face-icon" }, [
+                _c("use", {
+                  attrs: {
+                    href: "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "label-avatar bg-blue" }, [_vm._v("6")]),
+              _vm._v(" "),
               _c(
                 "div",
                 {
                   staticClass:
-                    "selectize-control form-control js-user-search multi"
+                    "more-dropdown more-with-triangle triangle-top-center"
                 },
                 [
-                  _c(
-                    "div",
-                    {
-                      staticClass:
-                        "selectize-input items not-full has-options input-active dropdown-active"
-                    },
-                    [
-                      _c("input", {
-                        staticStyle: {
-                          width: "229.863px",
-                          opacity: "1",
-                          position: "relative",
-                          left: "0px"
-                        },
-                        attrs: {
-                          type: "text",
-                          autocomplete: "off",
-                          tabindex: "",
-                          placeholder: "Pc search"
-                        },
-                        on: { keyup: _vm.getUser }
-                      })
-                    ]
-                  ),
+                  _vm._m(23),
                   _vm._v(" "),
                   _c(
                     "div",
                     {
                       staticClass:
-                        "selectize-dropdown multi form-control js-user-search",
-                      staticStyle: {
-                        display: "none",
-                        width: "500px",
-                        top: "70px",
-                        left: "0px",
-                        visibility: "visible"
+                        "mCustomScrollbar ps ps--theme_default ps--active-y",
+                      attrs: {
+                        "data-mcs-theme": "dark",
+                        "data-ps-id": "13cea887-6672-7b94-6d29-420177e7e512"
                       }
                     },
                     [
-                      _vm.notFoundFriend
-                        ? _c(
-                            "div",
-                            { staticClass: "selectize-dropdown-content" },
-                            [
+                      _c(
+                        "ul",
+                        { staticClass: "notification-list friend-requests" },
+                        [
+                          _c("li", [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar55-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _vm._m(24),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
                               _c(
-                                "div",
+                                "a",
                                 {
-                                  staticClass: "inline-items",
-                                  attrs: {
-                                    "data-selectable": "",
-                                    "data-value": "Marie Claire Stevens"
-                                  }
+                                  staticClass: "accept-request",
+                                  attrs: { href: "#" }
                                 },
                                 [
                                   _c(
-                                    "h1",
-                                    { staticStyle: { "text-align": "center" } },
-                                    [_vm._v(_vm._s(_vm.notFoundStatus))]
+                                    "span",
+                                    { staticClass: "icon-add without-text" },
+                                    [
+                                      _c(
+                                        "svg",
+                                        {
+                                          staticClass: "olymp-happy-face-icon"
+                                        },
+                                        [
+                                          _c("use", {
+                                            attrs: {
+                                              href:
+                                                "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                            }
+                                          })
+                                        ]
+                                      )
+                                    ]
                                   )
                                 ]
-                              )
-                            ]
-                          )
-                        : _vm._l(_vm.friends, function(friend) {
-                            return _c(
-                              "div",
-                              { staticClass: "selectize-dropdown-content" },
-                              [
-                                _c(
-                                  "a",
-                                  {
-                                    attrs: {
-                                      href: "/profile/" + friend.slug + "/about"
-                                    }
-                                  },
-                                  [
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "accept-request request-del",
+                                  attrs: { href: "#" }
+                                },
+                                [
+                                  _c("span", { staticClass: "icon-minus" }, [
                                     _c(
-                                      "div",
-                                      {
-                                        staticClass: "inline-items",
-                                        attrs: {
-                                          "data-selectable": "",
-                                          "data-value": "Marie Claire Stevens"
-                                        }
-                                      },
+                                      "svg",
+                                      { staticClass: "olymp-happy-face-icon" },
                                       [
-                                        _c(
-                                          "div",
-                                          { staticClass: "author-thumb" },
-                                          [
-                                            _c("img", {
-                                              staticStyle: {
-                                                width: "42px",
-                                                height: "42px"
-                                              },
-                                              attrs: {
-                                                src: friend.avatar,
-                                                alt: "avatar"
-                                              }
-                                            })
-                                          ]
-                                        ),
-                                        _vm._v(" "),
-                                        _c(
-                                          "div",
-                                          { staticClass: "notification-event" },
-                                          [
-                                            _c(
-                                              "span",
-                                              {
-                                                staticClass:
-                                                  "h6 notification-friend"
-                                              },
-                                              [_vm._v(_vm._s(friend.name))]
-                                            ),
-                                            _c(
-                                              "span",
-                                              {
-                                                staticClass: "chat-message-item"
-                                              },
-                                              [_vm._v("12 Friends in Common")]
-                                            )
-                                          ]
-                                        )
+                                        _c("use", {
+                                          attrs: {
+                                            href:
+                                              "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                          }
+                                        })
                                       ]
                                     )
-                                  ]
-                                )
-                              ]
-                            )
-                          })
-                    ],
-                    2
+                                  ])
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("li", [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar56-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _vm._m(25),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "accept-request",
+                                  attrs: { href: "#" }
+                                },
+                                [
+                                  _c(
+                                    "span",
+                                    { staticClass: "icon-add without-text" },
+                                    [
+                                      _c(
+                                        "svg",
+                                        {
+                                          staticClass: "olymp-happy-face-icon"
+                                        },
+                                        [
+                                          _c("use", {
+                                            attrs: {
+                                              href:
+                                                "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                            }
+                                          })
+                                        ]
+                                      )
+                                    ]
+                                  )
+                                ]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "accept-request request-del",
+                                  attrs: { href: "#" }
+                                },
+                                [
+                                  _c("span", { staticClass: "icon-minus" }, [
+                                    _c(
+                                      "svg",
+                                      { staticClass: "olymp-happy-face-icon" },
+                                      [
+                                        _c("use", {
+                                          attrs: {
+                                            href:
+                                              "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                          }
+                                        })
+                                      ]
+                                    )
+                                  ])
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("li", { staticClass: "accepted" }, [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar57-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _vm._m(26),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-happy-face-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-little-delete" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-little-delete"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("li", [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar58-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _vm._m(27),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "accept-request",
+                                  attrs: { href: "#" }
+                                },
+                                [
+                                  _c(
+                                    "span",
+                                    { staticClass: "icon-add without-text" },
+                                    [
+                                      _c(
+                                        "svg",
+                                        {
+                                          staticClass: "olymp-happy-face-icon"
+                                        },
+                                        [
+                                          _c("use", {
+                                            attrs: {
+                                              href:
+                                                "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                            }
+                                          })
+                                        ]
+                                      )
+                                    ]
+                                  )
+                                ]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "accept-request request-del",
+                                  attrs: { href: "#" }
+                                },
+                                [
+                                  _c("span", { staticClass: "icon-minus" }, [
+                                    _c(
+                                      "svg",
+                                      { staticClass: "olymp-happy-face-icon" },
+                                      [
+                                        _c("use", {
+                                          attrs: {
+                                            href:
+                                              "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                          }
+                                        })
+                                      ]
+                                    )
+                                  ])
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ])
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _vm._m(28),
+                      _vm._v(" "),
+                      _vm._m(29)
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "a",
+                    { staticClass: "view-all bg-blue", attrs: { href: "#" } },
+                    [_vm._v("Check all your Events")]
                   )
                 ]
-              ),
-              _vm._v(" "),
-              _c("button", [
-                _c("svg", { staticClass: "olymp-magnifying-glass-icon" }, [
-                  _c("use", {
-                    attrs: {
-                      href:
-                        "/svg-icons/sprites/icons.svg#olymp-magnifying-glass-icon"
-                    }
-                  })
-                ])
-              ]),
-              _vm._v(" "),
-              _c("span", { staticClass: "material-input" })
-            ])
-          ]
-        ),
-        _vm._v(" "),
-        _c("a", { staticClass: "link-find-friend", attrs: { href: "#" } }, [
-          _vm._v("Find Friends")
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "control-block" }, [
-          _c("div", { staticClass: "control-icon more has-items" }, [
-            _c("svg", { staticClass: "olymp-happy-face-icon" }, [
-              _c("use", {
-                attrs: {
-                  href: "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                }
-              })
+              )
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "label-avatar bg-blue" }, [_vm._v("6")]),
+            _c("div", { staticClass: "control-icon more has-items" }, [
+              _c("svg", { staticClass: "olymp-chat---messages-icon" }, [
+                _c("use", {
+                  attrs: {
+                    href:
+                      "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "label-avatar bg-purple" }, [
+                _vm._v("2")
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "more-dropdown more-with-triangle triangle-top-center"
+                },
+                [
+                  _vm._m(30),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass:
+                        "mCustomScrollbar ps ps--theme_default ps--active-y",
+                      attrs: {
+                        "data-mcs-theme": "dark",
+                        "data-ps-id": "7ea32c1e-50fb-44a6-0b68-3b5f5586da15"
+                      }
+                    },
+                    [
+                      _c(
+                        "ul",
+                        { staticClass: "notification-list chat-message" },
+                        [
+                          _c("li", { staticClass: "message-unread" }, [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar59-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "notification-event" }, [
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "h6 notification-friend",
+                                  attrs: { href: "#" }
+                                },
+                                [_vm._v(_vm._s(_vm.name))]
+                              ),
+                              _vm._v(" "),
+                              _c("span", { staticClass: "chat-message-item" }, [
+                                _vm._v(
+                                  "Hi James! It’s Diana, I just wanted to let you know that we have to reschedule..."
+                                )
+                              ]),
+                              _vm._v(" "),
+                              _vm._m(31)
+                            ]),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-chat---messages-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("li", [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar60-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _vm._m(32),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-chat---messages-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("li", [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar61-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _vm._m(33),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-chat---messages-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("li", { staticClass: "chat-group" }, [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar11-sm.jpg",
+                                  alt: "author"
+                                }
+                              }),
+                              _vm._v(" "),
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar12-sm.jpg",
+                                  alt: "author"
+                                }
+                              }),
+                              _vm._v(" "),
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar13-sm.jpg",
+                                  alt: "author"
+                                }
+                              }),
+                              _vm._v(" "),
+                              _c("img", {
+                                attrs: {
+                                  src: "/img/avatar10-sm.jpg",
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _vm._m(34),
+                            _vm._v(" "),
+                            _c("span", { staticClass: "notification-icon" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-chat---messages-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "more" }, [
+                              _c(
+                                "svg",
+                                { staticClass: "olymp-three-dots-icon" },
+                                [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                    }
+                                  })
+                                ]
+                              )
+                            ])
+                          ])
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _vm._m(35),
+                      _vm._v(" "),
+                      _vm._m(36)
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "a",
+                    { staticClass: "view-all bg-purple", attrs: { href: "#" } },
+                    [_vm._v("View All Messages")]
+                  )
+                ]
+              )
+            ]),
             _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass:
-                  "more-dropdown more-with-triangle triangle-top-center"
-              },
-              [
-                _vm._m(23),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  {
-                    staticClass:
-                      "mCustomScrollbar ps ps--theme_default ps--active-y",
-                    attrs: {
-                      "data-mcs-theme": "dark",
-                      "data-ps-id": "13cea887-6672-7b94-6d29-420177e7e512"
-                    }
-                  },
-                  [
-                    _c(
-                      "ul",
-                      { staticClass: "notification-list friend-requests" },
-                      [
+            _c("div", { staticClass: "control-icon more has-items" }, [
+              _c("svg", { staticClass: "olymp-thunder-icon" }, [
+                _c("use", {
+                  attrs: {
+                    href: "/svg-icons/sprites/icons.svg#olymp-thunder-icon"
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "label-avatar bg-primary" }, [
+                _vm._v("8")
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass:
+                    "more-dropdown more-with-triangle triangle-top-center"
+                },
+                [
+                  _vm._m(37),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass:
+                        "mCustomScrollbar ps ps--theme_default ps--active-y",
+                      attrs: {
+                        "data-mcs-theme": "dark",
+                        "data-ps-id": "1c8f73fc-ad38-7e27-6163-bc1d0a1be3c1"
+                      }
+                    },
+                    [
+                      _c("ul", { staticClass: "notification-list" }, [
                         _c("li", [
                           _c("div", { staticClass: "author-thumb" }, [
                             _c("img", {
                               attrs: {
-                                src: "/img/avatar55-sm.jpg",
+                                src: "/img/avatar62-sm.jpg",
                                 alt: "author"
                               }
                             })
                           ]),
                           _vm._v(" "),
-                          _vm._m(24),
+                          _vm._m(38),
                           _vm._v(" "),
                           _c("span", { staticClass: "notification-icon" }, [
                             _c(
-                              "a",
-                              {
-                                staticClass: "accept-request",
-                                attrs: { href: "#" }
-                              },
+                              "svg",
+                              { staticClass: "olymp-comments-post-icon" },
                               [
-                                _c(
-                                  "span",
-                                  { staticClass: "icon-add without-text" },
-                                  [
-                                    _c(
-                                      "svg",
-                                      { staticClass: "olymp-happy-face-icon" },
-                                      [
-                                        _c("use", {
-                                          attrs: {
-                                            href:
-                                              "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                          }
-                                        })
-                                      ]
-                                    )
-                                  ]
-                                )
-                              ]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "a",
-                              {
-                                staticClass: "accept-request request-del",
-                                attrs: { href: "#" }
-                              },
-                              [
-                                _c("span", { staticClass: "icon-minus" }, [
-                                  _c(
-                                    "svg",
-                                    { staticClass: "olymp-happy-face-icon" },
-                                    [
-                                      _c("use", {
-                                        attrs: {
-                                          href:
-                                            "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                        }
-                                      })
-                                    ]
-                                  )
-                                ])
+                                _c("use", {
+                                  attrs: {
+                                    href:
+                                      "/svg-icons/sprites/icons.svg#olymp-comments-post-icon"
+                                  }
+                                })
                               ]
                             )
                           ]),
@@ -71042,72 +71684,42 @@ var render = function() {
                                   }
                                 })
                               ]
-                            )
+                            ),
+                            _vm._v(" "),
+                            _c("svg", { staticClass: "olymp-little-delete" }, [
+                              _c("use", {
+                                attrs: {
+                                  href:
+                                    "/svg-icons/sprites/icons.svg#olymp-little-delete"
+                                }
+                              })
+                            ])
                           ])
                         ]),
                         _vm._v(" "),
-                        _c("li", [
+                        _c("li", { staticClass: "un-read" }, [
                           _c("div", { staticClass: "author-thumb" }, [
                             _c("img", {
                               attrs: {
-                                src: "/img/avatar56-sm.jpg",
+                                src: "/img/avatar63-sm.jpg",
                                 alt: "author"
                               }
                             })
                           ]),
                           _vm._v(" "),
-                          _vm._m(25),
+                          _vm._m(39),
                           _vm._v(" "),
                           _c("span", { staticClass: "notification-icon" }, [
                             _c(
-                              "a",
-                              {
-                                staticClass: "accept-request",
-                                attrs: { href: "#" }
-                              },
+                              "svg",
+                              { staticClass: "olymp-happy-face-icon" },
                               [
-                                _c(
-                                  "span",
-                                  { staticClass: "icon-add without-text" },
-                                  [
-                                    _c(
-                                      "svg",
-                                      { staticClass: "olymp-happy-face-icon" },
-                                      [
-                                        _c("use", {
-                                          attrs: {
-                                            href:
-                                              "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                          }
-                                        })
-                                      ]
-                                    )
-                                  ]
-                                )
-                              ]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "a",
-                              {
-                                staticClass: "accept-request request-del",
-                                attrs: { href: "#" }
-                              },
-                              [
-                                _c("span", { staticClass: "icon-minus" }, [
-                                  _c(
-                                    "svg",
-                                    { staticClass: "olymp-happy-face-icon" },
-                                    [
-                                      _c("use", {
-                                        attrs: {
-                                          href:
-                                            "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                        }
-                                      })
-                                    ]
-                                  )
-                                ])
+                                _c("use", {
+                                  attrs: {
+                                    href:
+                                      "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                  }
+                                })
                               ]
                             )
                           ]),
@@ -71124,21 +71736,97 @@ var render = function() {
                                   }
                                 })
                               ]
-                            )
+                            ),
+                            _vm._v(" "),
+                            _c("svg", { staticClass: "olymp-little-delete" }, [
+                              _c("use", {
+                                attrs: {
+                                  href:
+                                    "/svg-icons/sprites/icons.svg#olymp-little-delete"
+                                }
+                              })
+                            ])
                           ])
                         ]),
                         _vm._v(" "),
-                        _c("li", { staticClass: "accepted" }, [
+                        _c("li", { staticClass: "with-comment-photo" }, [
                           _c("div", { staticClass: "author-thumb" }, [
                             _c("img", {
                               attrs: {
-                                src: "/img/avatar57-sm.jpg",
+                                src: "/img/avatar64-sm.jpg",
                                 alt: "author"
                               }
                             })
                           ]),
                           _vm._v(" "),
-                          _vm._m(26),
+                          _vm._m(40),
+                          _vm._v(" "),
+                          _c("span", { staticClass: "notification-icon" }, [
+                            _c(
+                              "svg",
+                              { staticClass: "olymp-comments-post-icon" },
+                              [
+                                _c("use", {
+                                  attrs: {
+                                    href:
+                                      "/svg-icons/sprites/icons.svg#olymp-comments-post-icon"
+                                  }
+                                })
+                              ]
+                            )
+                          ]),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "comment-photo" }, [
+                            _c("img", {
+                              attrs: {
+                                src: "/img/comment-photo1.jpg",
+                                alt: "photo"
+                              }
+                            }),
+                            _vm._v(" "),
+                            _c("span", [
+                              _vm._v(
+                                "“She looks incredible in that outfit! We should see each...”"
+                              )
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "more" }, [
+                            _c(
+                              "svg",
+                              { staticClass: "olymp-three-dots-icon" },
+                              [
+                                _c("use", {
+                                  attrs: {
+                                    href:
+                                      "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                  }
+                                })
+                              ]
+                            ),
+                            _vm._v(" "),
+                            _c("svg", { staticClass: "olymp-little-delete" }, [
+                              _c("use", {
+                                attrs: {
+                                  href:
+                                    "/svg-icons/sprites/icons.svg#olymp-little-delete"
+                                }
+                              })
+                            ])
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("li", [
+                          _c("div", { staticClass: "author-thumb" }, [
+                            _c("img", {
+                              attrs: {
+                                src: "/img/avatar65-sm.jpg",
+                                alt: "author"
+                              }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _vm._m(41),
                           _vm._v(" "),
                           _c("span", { staticClass: "notification-icon" }, [
                             _c(
@@ -71184,179 +71872,50 @@ var render = function() {
                           _c("div", { staticClass: "author-thumb" }, [
                             _c("img", {
                               attrs: {
-                                src: "/img/avatar58-sm.jpg",
-                                alt: "author"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _vm._m(27),
-                          _vm._v(" "),
-                          _c("span", { staticClass: "notification-icon" }, [
-                            _c(
-                              "a",
-                              {
-                                staticClass: "accept-request",
-                                attrs: { href: "#" }
-                              },
-                              [
-                                _c(
-                                  "span",
-                                  { staticClass: "icon-add without-text" },
-                                  [
-                                    _c(
-                                      "svg",
-                                      { staticClass: "olymp-happy-face-icon" },
-                                      [
-                                        _c("use", {
-                                          attrs: {
-                                            href:
-                                              "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                          }
-                                        })
-                                      ]
-                                    )
-                                  ]
-                                )
-                              ]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "a",
-                              {
-                                staticClass: "accept-request request-del",
-                                attrs: { href: "#" }
-                              },
-                              [
-                                _c("span", { staticClass: "icon-minus" }, [
-                                  _c(
-                                    "svg",
-                                    { staticClass: "olymp-happy-face-icon" },
-                                    [
-                                      _c("use", {
-                                        attrs: {
-                                          href:
-                                            "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                        }
-                                      })
-                                    ]
-                                  )
-                                ])
-                              ]
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "more" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-three-dots-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                                  }
-                                })
-                              ]
-                            )
-                          ])
-                        ])
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _vm._m(28),
-                    _vm._v(" "),
-                    _vm._m(29)
-                  ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "a",
-                  { staticClass: "view-all bg-blue", attrs: { href: "#" } },
-                  [_vm._v("Check all your Events")]
-                )
-              ]
-            )
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "control-icon more has-items" }, [
-            _c("svg", { staticClass: "olymp-chat---messages-icon" }, [
-              _c("use", {
-                attrs: {
-                  href:
-                    "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
-                }
-              })
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "label-avatar bg-purple" }, [_vm._v("2")]),
-            _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass:
-                  "more-dropdown more-with-triangle triangle-top-center"
-              },
-              [
-                _vm._m(30),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  {
-                    staticClass:
-                      "mCustomScrollbar ps ps--theme_default ps--active-y",
-                    attrs: {
-                      "data-mcs-theme": "dark",
-                      "data-ps-id": "7ea32c1e-50fb-44a6-0b68-3b5f5586da15"
-                    }
-                  },
-                  [
-                    _c(
-                      "ul",
-                      { staticClass: "notification-list chat-message" },
-                      [
-                        _c("li", { staticClass: "message-unread" }, [
-                          _c("div", { staticClass: "author-thumb" }, [
-                            _c("img", {
-                              attrs: {
-                                src: "/img/avatar59-sm.jpg",
+                                src: "/img/avatar66-sm.jpg",
                                 alt: "author"
                               }
                             })
                           ]),
                           _vm._v(" "),
                           _c("div", { staticClass: "notification-event" }, [
-                            _c(
-                              "a",
-                              {
-                                staticClass: "h6 notification-friend",
-                                attrs: { href: "#" }
-                              },
-                              [_vm._v(_vm._s(_vm.name))]
-                            ),
-                            _vm._v(" "),
-                            _c("span", { staticClass: "chat-message-item" }, [
+                            _c("div", [
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "h6 notification-friend",
+                                  attrs: { href: "#" }
+                                },
+                                [_vm._v(_vm._s(_vm.name))]
+                              ),
                               _vm._v(
-                                "Hi James! It’s Diana, I just wanted to let you know that we have to reschedule..."
+                                " commented\n                                                on your\n                                                new "
+                              ),
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "notification-link",
+                                  attrs: { href: "#" }
+                                },
+                                [_vm._v("profile status")]
+                              ),
+                              _vm._v(
+                                ".\n                                            "
                               )
                             ]),
                             _vm._v(" "),
-                            _vm._m(31)
+                            _vm._m(42)
                           ]),
                           _vm._v(" "),
                           _c("span", { staticClass: "notification-icon" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-chat---messages-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
-                                  }
-                                })
-                              ]
-                            )
+                            _c("svg", { staticClass: "olymp-heart-icon" }, [
+                              _c("use", {
+                                attrs: {
+                                  href:
+                                    "/svg-icons/sprites/icons.svg#olymp-heart-icon"
+                                }
+                              })
+                            ])
                           ]),
                           _vm._v(" "),
                           _c("div", { staticClass: "more" }, [
@@ -71371,613 +71930,165 @@ var render = function() {
                                   }
                                 })
                               ]
-                            )
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("li", [
-                          _c("div", { staticClass: "author-thumb" }, [
-                            _c("img", {
-                              attrs: {
-                                src: "/img/avatar60-sm.jpg",
-                                alt: "author"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _vm._m(32),
-                          _vm._v(" "),
-                          _c("span", { staticClass: "notification-icon" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-chat---messages-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
-                                  }
-                                })
-                              ]
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "more" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-three-dots-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                                  }
-                                })
-                              ]
-                            )
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("li", [
-                          _c("div", { staticClass: "author-thumb" }, [
-                            _c("img", {
-                              attrs: {
-                                src: "/img/avatar61-sm.jpg",
-                                alt: "author"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _vm._m(33),
-                          _vm._v(" "),
-                          _c("span", { staticClass: "notification-icon" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-chat---messages-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
-                                  }
-                                })
-                              ]
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "more" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-three-dots-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                                  }
-                                })
-                              ]
-                            )
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("li", { staticClass: "chat-group" }, [
-                          _c("div", { staticClass: "author-thumb" }, [
-                            _c("img", {
-                              attrs: {
-                                src: "/img/avatar11-sm.jpg",
-                                alt: "author"
-                              }
-                            }),
+                            ),
                             _vm._v(" "),
-                            _c("img", {
-                              attrs: {
-                                src: "/img/avatar12-sm.jpg",
-                                alt: "author"
-                              }
-                            }),
-                            _vm._v(" "),
-                            _c("img", {
-                              attrs: {
-                                src: "/img/avatar13-sm.jpg",
-                                alt: "author"
-                              }
-                            }),
-                            _vm._v(" "),
-                            _c("img", {
-                              attrs: {
-                                src: "/img/avatar10-sm.jpg",
-                                alt: "author"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _vm._m(34),
-                          _vm._v(" "),
-                          _c("span", { staticClass: "notification-icon" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-chat---messages-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
-                                  }
-                                })
-                              ]
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "more" }, [
-                            _c(
-                              "svg",
-                              { staticClass: "olymp-three-dots-icon" },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                                  }
-                                })
-                              ]
-                            )
+                            _c("svg", { staticClass: "olymp-little-delete" }, [
+                              _c("use", {
+                                attrs: {
+                                  href:
+                                    "/svg-icons/sprites/icons.svg#olymp-little-delete"
+                                }
+                              })
+                            ])
                           ])
                         ])
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _vm._m(35),
-                    _vm._v(" "),
-                    _vm._m(36)
-                  ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "a",
-                  { staticClass: "view-all bg-purple", attrs: { href: "#" } },
-                  [_vm._v("View All Messages")]
-                )
-              ]
-            )
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "control-icon more has-items" }, [
-            _c("svg", { staticClass: "olymp-thunder-icon" }, [
-              _c("use", {
-                attrs: {
-                  href: "/svg-icons/sprites/icons.svg#olymp-thunder-icon"
-                }
-              })
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "label-avatar bg-primary" }, [
-              _vm._v("8")
+                      ]),
+                      _vm._v(" "),
+                      _vm._m(43),
+                      _vm._v(" "),
+                      _vm._m(44)
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "a",
+                    {
+                      staticClass: "view-all bg-primary",
+                      attrs: { href: "#" }
+                    },
+                    [_vm._v("View All Notifications")]
+                  )
+                ]
+              )
             ]),
             _vm._v(" "),
             _c(
               "div",
-              {
-                staticClass:
-                  "more-dropdown more-with-triangle triangle-top-center"
-              },
+              { staticClass: "author-page author vcard inline-items more" },
               [
-                _vm._m(37),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  {
-                    staticClass:
-                      "mCustomScrollbar ps ps--theme_default ps--active-y",
-                    attrs: {
-                      "data-mcs-theme": "dark",
-                      "data-ps-id": "1c8f73fc-ad38-7e27-6163-bc1d0a1be3c1"
-                    }
-                  },
-                  [
-                    _c("ul", { staticClass: "notification-list" }, [
-                      _c("li", [
-                        _c("div", { staticClass: "author-thumb" }, [
-                          _c("img", {
-                            attrs: {
-                              src: "/img/avatar62-sm.jpg",
-                              alt: "author"
-                            }
-                          })
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(38),
-                        _vm._v(" "),
-                        _c("span", { staticClass: "notification-icon" }, [
-                          _c(
-                            "svg",
-                            { staticClass: "olymp-comments-post-icon" },
-                            [
-                              _c("use", {
-                                attrs: {
-                                  href:
-                                    "/svg-icons/sprites/icons.svg#olymp-comments-post-icon"
-                                }
-                              })
-                            ]
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "more" }, [
-                          _c("svg", { staticClass: "olymp-three-dots-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _c("svg", { staticClass: "olymp-little-delete" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-little-delete"
-                              }
-                            })
-                          ])
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("li", { staticClass: "un-read" }, [
-                        _c("div", { staticClass: "author-thumb" }, [
-                          _c("img", {
-                            attrs: {
-                              src: "/img/avatar63-sm.jpg",
-                              alt: "author"
-                            }
-                          })
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(39),
-                        _vm._v(" "),
-                        _c("span", { staticClass: "notification-icon" }, [
-                          _c("svg", { staticClass: "olymp-happy-face-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                              }
-                            })
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "more" }, [
-                          _c("svg", { staticClass: "olymp-three-dots-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _c("svg", { staticClass: "olymp-little-delete" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-little-delete"
-                              }
-                            })
-                          ])
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("li", { staticClass: "with-comment-photo" }, [
-                        _c("div", { staticClass: "author-thumb" }, [
-                          _c("img", {
-                            attrs: {
-                              src: "/img/avatar64-sm.jpg",
-                              alt: "author"
-                            }
-                          })
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(40),
-                        _vm._v(" "),
-                        _c("span", { staticClass: "notification-icon" }, [
-                          _c(
-                            "svg",
-                            { staticClass: "olymp-comments-post-icon" },
-                            [
-                              _c("use", {
-                                attrs: {
-                                  href:
-                                    "/svg-icons/sprites/icons.svg#olymp-comments-post-icon"
-                                }
-                              })
-                            ]
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "comment-photo" }, [
-                          _c("img", {
-                            attrs: {
-                              src: "/img/comment-photo1.jpg",
-                              alt: "photo"
-                            }
-                          }),
-                          _vm._v(" "),
-                          _c("span", [
-                            _vm._v(
-                              "“She looks incredible in that outfit! We should see each...”"
-                            )
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "more" }, [
-                          _c("svg", { staticClass: "olymp-three-dots-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _c("svg", { staticClass: "olymp-little-delete" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-little-delete"
-                              }
-                            })
-                          ])
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("li", [
-                        _c("div", { staticClass: "author-thumb" }, [
-                          _c("img", {
-                            attrs: {
-                              src: "/img/avatar65-sm.jpg",
-                              alt: "author"
-                            }
-                          })
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(41),
-                        _vm._v(" "),
-                        _c("span", { staticClass: "notification-icon" }, [
-                          _c("svg", { staticClass: "olymp-happy-face-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                              }
-                            })
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "more" }, [
-                          _c("svg", { staticClass: "olymp-three-dots-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _c("svg", { staticClass: "olymp-little-delete" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-little-delete"
-                              }
-                            })
-                          ])
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("li", [
-                        _c("div", { staticClass: "author-thumb" }, [
-                          _c("img", {
-                            attrs: {
-                              src: "/img/avatar66-sm.jpg",
-                              alt: "author"
-                            }
-                          })
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "notification-event" }, [
-                          _c("div", [
-                            _c(
-                              "a",
-                              {
-                                staticClass: "h6 notification-friend",
-                                attrs: { href: "#" }
-                              },
-                              [_vm._v(_vm._s(_vm.name))]
-                            ),
-                            _vm._v(
-                              " commented\n                                                on your\n                                                new "
-                            ),
-                            _c(
-                              "a",
-                              {
-                                staticClass: "notification-link",
-                                attrs: { href: "#" }
-                              },
-                              [_vm._v("profile status")]
-                            ),
-                            _vm._v(
-                              ".\n                                            "
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _vm._m(42)
-                        ]),
-                        _vm._v(" "),
-                        _c("span", { staticClass: "notification-icon" }, [
-                          _c("svg", { staticClass: "olymp-heart-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-heart-icon"
-                              }
-                            })
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "more" }, [
-                          _c("svg", { staticClass: "olymp-three-dots-icon" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                              }
-                            })
-                          ]),
-                          _vm._v(" "),
-                          _c("svg", { staticClass: "olymp-little-delete" }, [
-                            _c("use", {
-                              attrs: {
-                                href:
-                                  "/svg-icons/sprites/icons.svg#olymp-little-delete"
-                              }
-                            })
-                          ])
-                        ])
-                      ])
-                    ]),
-                    _vm._v(" "),
-                    _vm._m(43),
-                    _vm._v(" "),
-                    _vm._m(44)
-                  ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "a",
-                  { staticClass: "view-all bg-primary", attrs: { href: "#" } },
-                  [_vm._v("View All Notifications")]
-                )
-              ]
-            )
-          ]),
-          _vm._v(" "),
-          _c(
-            "div",
-            { staticClass: "author-page author vcard inline-items more" },
-            [
-              _c("div", { staticClass: "author-thumb" }, [
-                _c("img", {
-                  staticClass: "avatar",
-                  staticStyle: { width: "36px", height: "36px" },
-                  attrs: { alt: "author", src: _vm.authAvatar }
-                }),
-                _vm._v(" "),
-                _c("span", { staticClass: "icon-status online" }),
-                _vm._v(" "),
-                _c("div", { staticClass: "more-dropdown more-with-triangle" }, [
+                _c("div", { staticClass: "author-thumb" }, [
+                  _c("img", {
+                    staticClass: "avatar",
+                    staticStyle: { width: "36px", height: "36px" },
+                    attrs: { alt: "author", src: _vm.authAvatar }
+                  }),
+                  _vm._v(" "),
+                  _c("span", { staticClass: "icon-status online" }),
+                  _vm._v(" "),
                   _c(
                     "div",
-                    {
-                      staticClass:
-                        "mCustomScrollbar ps ps--theme_default ps--active-y",
-                      attrs: {
-                        "data-mcs-theme": "dark",
-                        "data-ps-id": "ad4e6d24-bf2c-7239-fe1a-f9fd383984b5"
-                      }
-                    },
+                    { staticClass: "more-dropdown more-with-triangle" },
                     [
-                      _vm._m(45),
-                      _vm._v(" "),
-                      _c("ul", { staticClass: "account-settings" }, [
-                        _c("li", [
-                          _c("a", { attrs: { href: "" } }, [
-                            _c("svg", { staticClass: "olymp-menu-icon" }, [
-                              _c("use", {
-                                attrs: {
-                                  href:
-                                    "/svg-icons/sprites/icons.svg#olymp-menu-icon"
-                                }
-                              })
+                      _c(
+                        "div",
+                        {
+                          staticClass:
+                            "mCustomScrollbar ps ps--theme_default ps--active-y",
+                          attrs: {
+                            "data-mcs-theme": "dark",
+                            "data-ps-id": "ad4e6d24-bf2c-7239-fe1a-f9fd383984b5"
+                          }
+                        },
+                        [
+                          _vm._m(45),
+                          _vm._v(" "),
+                          _c("ul", { staticClass: "account-settings" }, [
+                            _c("li", [
+                              _c("a", { attrs: { href: "" } }, [
+                                _c("svg", { staticClass: "olymp-menu-icon" }, [
+                                  _c("use", {
+                                    attrs: {
+                                      href:
+                                        "/svg-icons/sprites/icons.svg#olymp-menu-icon"
+                                    }
+                                  })
+                                ]),
+                                _vm._v(" "),
+                                _c("span", [_vm._v("Profile Settings")])
+                              ])
                             ]),
                             _vm._v(" "),
-                            _c("span", [_vm._v("Profile Settings")])
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("li", [
-                          _c("a", { attrs: { href: "" } }, [
-                            _c(
-                              "svg",
-                              {
-                                staticClass: "olymp-star-icon left-menu-icon",
-                                attrs: {
-                                  "data-toggle": "tooltip",
-                                  "data-placement": "right",
-                                  "data-original-title": "FAV PAGE"
-                                }
-                              },
-                              [
-                                _c("use", {
-                                  attrs: {
-                                    href:
-                                      "/svg-icons/sprites/icons.svg#olymp-star-icon"
-                                  }
-                                })
-                              ]
-                            ),
-                            _vm._v(" "),
-                            _c("span", [_vm._v("Create Fav Page")])
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("li", [
-                          _c("a", { attrs: { href: "#" } }, [
-                            _c("svg", { staticClass: "olymp-logout-icon" }, [
-                              _c("use", {
-                                attrs: {
-                                  href:
-                                    "/svg-icons/sprites/icons.svg#olymp-logout-icon"
-                                }
-                              })
+                            _c("li", [
+                              _c("a", { attrs: { href: "" } }, [
+                                _c(
+                                  "svg",
+                                  {
+                                    staticClass:
+                                      "olymp-star-icon left-menu-icon",
+                                    attrs: {
+                                      "data-toggle": "tooltip",
+                                      "data-placement": "right",
+                                      "data-original-title": "FAV PAGE"
+                                    }
+                                  },
+                                  [
+                                    _c("use", {
+                                      attrs: {
+                                        href:
+                                          "/svg-icons/sprites/icons.svg#olymp-star-icon"
+                                      }
+                                    })
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c("span", [_vm._v("Create Fav Page")])
+                              ])
                             ]),
                             _vm._v(" "),
-                            _vm._m(46)
-                          ])
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _vm._m(47),
-                      _vm._v(" "),
-                      _vm._m(48),
-                      _vm._v(" "),
-                      _vm._m(49),
-                      _vm._v(" "),
-                      _vm._m(50)
+                            _c("li", [
+                              _c("a", { attrs: { href: "#" } }, [
+                                _c(
+                                  "svg",
+                                  { staticClass: "olymp-logout-icon" },
+                                  [
+                                    _c("use", {
+                                      attrs: {
+                                        href:
+                                          "/svg-icons/sprites/icons.svg#olymp-logout-icon"
+                                      }
+                                    })
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _vm._m(46)
+                              ])
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _vm._m(47),
+                          _vm._v(" "),
+                          _vm._m(48),
+                          _vm._v(" "),
+                          _vm._m(49),
+                          _vm._v(" "),
+                          _vm._m(50)
+                        ]
+                      )
                     ]
                   )
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "author-title" }, [
+                  _vm._v(
+                    "\n                                " +
+                      _vm._s(_vm.authName) +
+                      "\n                                "
+                  ),
+                  _c("svg", { staticClass: "olymp-dropdown-arrow-icon" }, [
+                    _c("use", {
+                      attrs: {
+                        href:
+                          "/svg-icons/sprites/icons.svg#olymp-dropdown-arrow-icon"
+                      }
+                    })
+                  ])
                 ])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "author-title" }, [
-                _vm._v(
-                  "\n                                " +
-                    _vm._s(_vm.authName) +
-                    "\n                                "
-                ),
-                _c("svg", { staticClass: "olymp-dropdown-arrow-icon" }, [
-                  _c("use", {
-                    attrs: {
-                      href:
-                        "/svg-icons/sprites/icons.svg#olymp-dropdown-arrow-icon"
-                    }
-                  })
-                ])
-              ])
-            ]
-          )
-        ])
-      ])
+              ]
+            )
+          ])
+        ],
+        1
+      )
     ]),
     _vm._v(" "),
     _c(
@@ -72868,181 +72979,8 @@ var render = function() {
               staticClass: "tab-pane ",
               attrs: { id: "search", role: "tabpanel" }
             },
-            [
-              _c(
-                "form",
-                {
-                  staticClass:
-                    "search-bar w-search notification-list friend-requests"
-                },
-                [
-                  _c("div", { staticClass: "form-group with-button" }, [
-                    _c("input", {
-                      staticClass: "form-control js-user-search",
-                      attrs: { placeholder: "Mobile search", type: "text" },
-                      on: { keyup: _vm.getUser }
-                    })
-                  ]),
-                  _vm._v(" "),
-                  _c(
-                    "div",
-                    {
-                      staticClass:
-                        "selectize-control form-control js-user-search multi"
-                    },
-                    [
-                      _c(
-                        "div",
-                        {
-                          staticClass:
-                            "selectize-dropdown multi form-control js-user-search",
-                          staticStyle: {
-                            display: "none",
-                            width: "500px",
-                            top: "70px",
-                            left: "0px",
-                            visibility: "visible"
-                          }
-                        },
-                        [
-                          _vm.notFoundFriend
-                            ? _c(
-                                "div",
-                                { staticClass: "selectize-dropdown-content" },
-                                [
-                                  _c(
-                                    "div",
-                                    {
-                                      staticClass: "inline-items",
-                                      attrs: {
-                                        "data-selectable": "",
-                                        "data-value": "Marie Claire Stevens"
-                                      }
-                                    },
-                                    [
-                                      _c(
-                                        "h1",
-                                        {
-                                          staticStyle: {
-                                            "text-align": "center"
-                                          }
-                                        },
-                                        [_vm._v(_vm._s(_vm.notFoundStatus))]
-                                      )
-                                    ]
-                                  )
-                                ]
-                              )
-                            : _vm._l(_vm.friends, function(friend) {
-                                return _c(
-                                  "div",
-                                  { staticClass: "selectize-dropdown-content" },
-                                  [
-                                    _c(
-                                      "a",
-                                      {
-                                        attrs: {
-                                          href:
-                                            "/profile/" + friend.slug + "/about"
-                                        }
-                                      },
-                                      [
-                                        _c(
-                                          "div",
-                                          {
-                                            staticClass: "inline-items",
-                                            attrs: {
-                                              "data-selectable": "",
-                                              "data-value":
-                                                "Marie Claire Stevens"
-                                            }
-                                          },
-                                          [
-                                            _c(
-                                              "div",
-                                              { staticClass: "author-thumb" },
-                                              [
-                                                _c("img", {
-                                                  staticStyle: {
-                                                    width: "42px",
-                                                    height: "42px"
-                                                  },
-                                                  attrs: {
-                                                    src: friend.avatar,
-                                                    alt: "avatar"
-                                                  }
-                                                })
-                                              ]
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "div",
-                                              {
-                                                staticClass:
-                                                  "notification-event"
-                                              },
-                                              [
-                                                _c(
-                                                  "span",
-                                                  {
-                                                    staticClass:
-                                                      "h6 notification-friend"
-                                                  },
-                                                  [_vm._v(_vm._s(friend.name))]
-                                                ),
-                                                _c(
-                                                  "span",
-                                                  {
-                                                    staticClass:
-                                                      "chat-message-item"
-                                                  },
-                                                  [
-                                                    _vm._v(
-                                                      "12 Friends in Common"
-                                                    )
-                                                  ]
-                                                )
-                                              ]
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "span",
-                                              {
-                                                staticClass: "notification-icon"
-                                              },
-                                              [
-                                                _c(
-                                                  "svg",
-                                                  {
-                                                    staticClass:
-                                                      "olymp-happy-face-icon"
-                                                  },
-                                                  [
-                                                    _c("use", {
-                                                      attrs: {
-                                                        href:
-                                                          "/icons/icons.svg#olymp-happy-face-icon"
-                                                      }
-                                                    })
-                                                  ]
-                                                )
-                                              ]
-                                            )
-                                          ]
-                                        )
-                                      ]
-                                    )
-                                  ]
-                                )
-                              })
-                        ],
-                        2
-                      )
-                    ]
-                  )
-                ]
-              )
-            ]
+            [_c("vue-search-friend")],
+            1
           )
         ])
       ]
@@ -74582,19 +74520,19 @@ if (false) {
 }
 
 /***/ }),
-/* 115 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(116)
+  __webpack_require__(119)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
-var __vue_script__ = __webpack_require__(118)
+var __vue_script__ = __webpack_require__(121)
 /* template */
-var __vue_template__ = __webpack_require__(119)
+var __vue_template__ = __webpack_require__(122)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -74633,17 +74571,17 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 116 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(117);
+var content = __webpack_require__(120);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(3)("599f8a86", content, false, {});
+var update = __webpack_require__(4)("599f8a86", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -74659,7 +74597,7 @@ if(false) {
 }
 
 /***/ }),
-/* 117 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(2)(false);
@@ -74673,7 +74611,7 @@ exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\
 
 
 /***/ }),
-/* 118 */
+/* 121 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -74901,7 +74839,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 119 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -75328,7 +75266,7 @@ if (false) {
 }
 
 /***/ }),
-/* 120 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -75365,7 +75303,7 @@ if (false) {
 }
 
 /***/ }),
-/* 121 */
+/* 124 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin

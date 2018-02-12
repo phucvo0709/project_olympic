@@ -59,7 +59,12 @@ trait Friendable{
 
     public function pending_friend_requests_sent_ids()
     {
-        return collect($this->pending_friend_requests_sent())->pluck('id')->toArray();
+        $data = $this->pending_friend_requests_sent();
+
+        $originalFoo = $data->getOriginalContent()->pluck('user.id')->toArray();
+
+        return $originalFoo;
+
     }
 
     public function has_pending_friend_request_sent_to($user_id)

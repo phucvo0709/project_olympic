@@ -154,13 +154,13 @@
                 return this.$store.getters.userId
             }
         },
+        components:{
+            'edit-form': require('./EditProfile')
+        },
         data() {
             return{
                 empty: 'Empty',
             }
-        },
-        components:{
-            'edit-form': require('./EditProfile')
         },
         methods: {
             addFriend: function(userId){

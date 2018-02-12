@@ -1,4 +1,5 @@
 const state = {
+    friendSearch: [],
     penddingFriends: [],
 
     from: null,
@@ -13,8 +14,18 @@ const state = {
 }
 const actions = {
 
+    getFriendSearch({commit}, key){
+        axios.get(`/api/getuser/${key}`)
+            .then(resp =>{
+                if(resp.data === false){
+                    commit('GET_FRIENDSEARCH', [])
+                }else{
+                    commit('GET_FRIENDSEARCH', resp.data)
+                }
+            })
+    },
     getpendingFriends ({commit}){
-        axios.get('http://olympic.test/api/getpendingrequest')
+        axios.get('/api/getpendingrequest')
             .then (resp => {
                 let data = resp.data.data
 
@@ -98,6 +109,9 @@ const actions = {
 }
 
 const mutations = {
+    'GET_FRIENDSEARCH' (state, friendSearch){
+        state.friendSearch = friendSearch
+    },
     'GET_PENDDING_FRIENDS' (state, penddingFriends){
         state.penddingFriends = penddingFriends
     },
@@ -132,6 +146,9 @@ const mutations = {
 }
 
 const getters = {
+    friendSearch: state => {
+        return state.friendSearch
+    },
     penddingFriends: state => {
         return state.penddingFriends
     },

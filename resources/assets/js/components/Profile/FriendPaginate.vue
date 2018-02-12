@@ -1,5 +1,5 @@
 <template>
-<div class="text-center">
+<div class="text-center" v-show="total !== 0">
     <div class="d-flex justify-content-center">
         <ul class="pagination">
             <li class="page-item">

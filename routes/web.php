@@ -60,5 +60,9 @@ Route::group(['prefix' => 'api','middleware' => 'auth'], function() {
     Route::delete('cancelrequest/{user_requested}', 'UserController@cancelRequest');
     Route::get('getpendingto/{user_id}', 'UserController@getPendingTo');
     Route::get('getpendingrequest', 'UserController@getPendingRequest');
+
+    Route::get('test', function(){
+       return Auth::user()->pending_friend_requests_sent_ids();
+    });
 });
 
