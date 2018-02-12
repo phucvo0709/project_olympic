@@ -22,3 +22,5 @@ Update:
 - 11/2: 
   + Complete Laravel and vuejs: login, login with facebook, register, forgot password
   + Complete Laravel and vuejs: one-page router profile
+- 12/2: 
+  + Complete Laravel and vuejs: search friend and pagination
