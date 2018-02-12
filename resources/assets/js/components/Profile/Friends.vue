@@ -116,7 +116,7 @@
                                     <img style="max-width:100px; max-height:100px" :src="pendingFriend.avatar" alt="author">
                                 </div>
                                 <div class="author-content">
-                                    <router-link :to="{ name: 'about', params: {slug: pendingFriend.slug } }" class="h5 author-name">{{pendingFriend.name}}</router-link>
+                                    <router-link :to="{ name: 'about' }" class="h5 author-name">{{pendingFriend.name}}</router-link>
                                 </div>
                             </div>
 
@@ -163,6 +163,7 @@
                 </div>
             </div>
         </div>
+        <vue-paginate></vue-paginate>
         <h3>All Friend</h3>
     </div>
 
@@ -180,13 +181,18 @@
         },
         computed:{
             ...mapGetters({
-                pendingFriends: 'penddingFriends'
+                pendingFriends: 'penddingFriends',
             })
+        },
+        components: {
+            'vue-paginate': require('./FriendPaginate')
         },
         data() {
             return {
                 slug: this.$route.params.slug,
             }
-        },
+        }
     }
 </script>
+<style>
+</style>

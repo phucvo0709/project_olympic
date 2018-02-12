@@ -45006,15 +45006,82 @@ var getters = {
 
 "use strict";
 var state = {
-    penddingFriends: []
-};
+    penddingFriends: [],
 
+    from: null,
+    to: null,
+    total: null,
+    firstPageUrl: null,
+    prevPageUrl: null,
+    currentPage: null,
+    nextPageUrl: null,
+    lastPageUrl: null
+};
 var actions = {
     getpendingFriends: function getpendingFriends(_ref) {
         var commit = _ref.commit;
 
-        axios.get('/api/getpendingrequest').then(function (resp) {
-            commit('GET_PENDDING_FRIENDS', resp.data);
+        axios.get('http://olympic.test/api/getpendingrequest').then(function (resp) {
+            var data = resp.data.data;
+
+            //Data friends
+            var dataUsers = [];
+            data.forEach(function (dataUser) {
+                dataUsers.push(dataUser.user);
+            });
+            commit('GET_PENDDING_FRIENDS', dataUsers);
+
+            //data pagination
+            var from = resp.data.from;
+            var to = resp.data.to;
+            var total = resp.data.total;
+            var firstPageUrl = resp.data.first_page_url;
+            var prevPageUrl = resp.data.prev_page_url;
+            var currentPage = resp.data.current_page;
+            var nextPageUrl = resp.data.next_page_url;
+            var lastPageUrl = resp.data.last_page_url;
+
+            commit('GET_FROM', from);
+            commit('GET_TO', to);
+            commit('GET_TOTAL', total);
+            commit('GET_FIRSTPAGEURL', firstPageUrl);
+            commit('GET_PREVPAGEURL', prevPageUrl);
+            commit('GET_CURRENTPAGE', currentPage);
+            commit('GET_NEXTPAGEURL', nextPageUrl);
+            commit('GET_LASTPAGEURL', lastPageUrl);
+        });
+    },
+    getActionPagination: function getActionPagination(_ref2, url) {
+        var commit = _ref2.commit;
+
+        axios.get(url).then(function (resp) {
+            var data = resp.data.data;
+
+            //Data friends
+            var dataUsers = [];
+            data.forEach(function (dataUser) {
+                dataUsers.push(dataUser.user);
+            });
+            commit('GET_PENDDING_FRIENDS', dataUsers);
+
+            //data pagination
+            var from = resp.data.from;
+            var to = resp.data.to;
+            var total = resp.data.total;
+            var firstPageUrl = resp.data.first_page_url;
+            var prevPageUrl = resp.data.prev_page_url;
+            var currentPage = resp.data.current_page;
+            var nextPageUrl = resp.data.next_page_url;
+            var lastPageUrl = resp.data.last_page_url;
+
+            commit('GET_FROM', from);
+            commit('GET_TO', to);
+            commit('GET_TOTAL', total);
+            commit('GET_FIRSTPAGEURL', firstPageUrl);
+            commit('GET_PREVPAGEURL', prevPageUrl);
+            commit('GET_CURRENTPAGE', currentPage);
+            commit('GET_NEXTPAGEURL', nextPageUrl);
+            commit('GET_LASTPAGEURL', lastPageUrl);
         });
     }
 };
@@ -45022,12 +45089,61 @@ var actions = {
 var mutations = {
     'GET_PENDDING_FRIENDS': function GET_PENDDING_FRIENDS(state, penddingFriends) {
         state.penddingFriends = penddingFriends;
+    },
+    'GET_FROM': function GET_FROM(state, from) {
+        state.from = from;
+    },
+    'GET_TO': function GET_TO(state, to) {
+        state.to = to;
+    },
+    'GET_TOTAL': function GET_TOTAL(state, total) {
+        state.total = total;
+    },
+    'GET_FIRSTPAGEURL': function GET_FIRSTPAGEURL(state, firstPageUrl) {
+        state.firstPageUrl = firstPageUrl;
+    },
+    'GET_PREVPAGEURL': function GET_PREVPAGEURL(state, prevPageUrl) {
+        state.prevPageUrl = prevPageUrl;
+    },
+    'GET_CURRENTPAGE': function GET_CURRENTPAGE(state, currentPage) {
+        state.currentPage = currentPage;
+    },
+    'GET_NEXTPAGEURL': function GET_NEXTPAGEURL(state, nextPageUrl) {
+        state.nextPageUrl = nextPageUrl;
+    },
+    'GET_LASTPAGEURL': function GET_LASTPAGEURL(state, lastPageUrl) {
+        state.lastPageUrl = lastPageUrl;
     }
 };
 
 var getters = {
     penddingFriends: function penddingFriends(state) {
         return state.penddingFriends;
+    },
+
+    from: function from(state) {
+        return state.from;
+    },
+    to: function to(state) {
+        return state.to;
+    },
+    total: function total(state) {
+        return state.total;
+    },
+    firstPageUrl: function firstPageUrl(state) {
+        return state.firstPageUrl;
+    },
+    prevPageUrl: function prevPageUrl(state) {
+        return state.prevPageUrl;
+    },
+    currentPage: function currentPage(state) {
+        return state.currentPage;
+    },
+    nextPageUrl: function nextPageUrl(state) {
+        return state.nextPageUrl;
+    },
+    lastPageUrl: function lastPageUrl(state) {
+        return state.lastPageUrl;
     }
 };
 
@@ -50098,6 +50214,10 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(122)
+}
 var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(80)
@@ -50106,7 +50226,7 @@ var __vue_template__ = __webpack_require__(81)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
-var __vue_styles__ = null
+var __vue_styles__ = injectStyle
 /* scopeId */
 var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
@@ -50323,6 +50443,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -50332,6 +50453,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["b" /* mapGetters */])({
         pendingFriends: 'penddingFriends'
     })),
+    components: {
+        'vue-paginate': __webpack_require__(124)
+    },
     data: function data() {
         return {
             slug: this.$route.params.slug
@@ -50347,124 +50471,18 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "container" }, [
-    _c("h3", [_vm._v("Friend Pending")]),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "row" },
-      [
-        !_vm.pendingFriends[0]
-          ? _c(
-              "div",
-              { staticClass: "col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6" },
-              [
-                _c("div", { staticClass: "ui-block" }, [
-                  _c("div", { staticClass: "friend-item" }, [
-                    _c("div", { staticClass: "friend-header-thumb" }, [
-                      _c("img", {
-                        attrs: { src: "/img/friend8.jpg", alt: "friend" }
-                      })
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "friend-item-content" }, [
-                      _c("div", { staticClass: "more" }, [
-                        _c("svg", { staticClass: "olymp-three-dots-icon" }, [
-                          _c("use", {
-                            attrs: {
-                              href:
-                                "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
-                            }
-                          })
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(0)
-                      ]),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "friend-avatar" }, [
-                        _c("div", { staticClass: "author-thumb" }, [
-                          _c("img", {
-                            attrs: { src: "/img/avatar8.jpg", alt: "author" }
-                          })
-                        ]),
-                        _vm._v(" "),
-                        _vm._m(1)
-                      ]),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "swiper-container" }, [
-                        _c("div", { staticClass: "swiper-wrapper" }, [
-                          _c("div", { staticClass: "swiper-slide" }, [
-                            _vm._m(2),
-                            _vm._v(" "),
-                            _c(
-                              "div",
-                              {
-                                staticClass: "control-block-button",
-                                attrs: { "data-swiper-parallax": "-100" }
-                              },
-                              [
-                                _c(
-                                  "a",
-                                  {
-                                    staticClass: "btn btn-control bg-blue",
-                                    attrs: { href: "#" }
-                                  },
-                                  [
-                                    _c(
-                                      "svg",
-                                      { staticClass: "olymp-happy-face-icon" },
-                                      [
-                                        _c("use", {
-                                          attrs: {
-                                            href:
-                                              "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                          }
-                                        })
-                                      ]
-                                    )
-                                  ]
-                                ),
-                                _vm._v(" "),
-                                _c(
-                                  "a",
-                                  {
-                                    staticClass: "btn btn-control bg-purple",
-                                    attrs: { href: "#" }
-                                  },
-                                  [
-                                    _c(
-                                      "svg",
-                                      {
-                                        staticClass:
-                                          "olymp-chat---messages-icon"
-                                      },
-                                      [
-                                        _c("use", {
-                                          attrs: {
-                                            href:
-                                              "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
-                                          }
-                                        })
-                                      ]
-                                    )
-                                  ]
-                                )
-                              ]
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _vm._m(3)
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "swiper-pagination" })
-                      ])
-                    ])
-                  ])
-                ])
-              ]
-            )
-          : _vm._l(_vm.pendingFriends, function(pendingFriend) {
-              return _c(
+  return _c(
+    "div",
+    { staticClass: "container" },
+    [
+      _c("h3", [_vm._v("Friend Pending")]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "row" },
+        [
+          !_vm.pendingFriends[0]
+            ? _c(
                 "div",
                 { staticClass: "col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6" },
                 [
@@ -50472,11 +50490,7 @@ var render = function() {
                     _c("div", { staticClass: "friend-item" }, [
                       _c("div", { staticClass: "friend-header-thumb" }, [
                         _c("img", {
-                          staticStyle: {
-                            "max-width": "293px",
-                            "max-height": "112.4px"
-                          },
-                          attrs: { src: "/img/friend1.jpg", alt: "friend" }
+                          attrs: { src: "/img/friend8.jpg", alt: "friend" }
                         })
                       ]),
                       _vm._v(" "),
@@ -50491,159 +50505,281 @@ var render = function() {
                             })
                           ]),
                           _vm._v(" "),
-                          _vm._m(4, true)
+                          _vm._m(0)
                         ]),
                         _vm._v(" "),
                         _c("div", { staticClass: "friend-avatar" }, [
                           _c("div", { staticClass: "author-thumb" }, [
                             _c("img", {
-                              staticStyle: {
-                                "max-width": "100px",
-                                "max-height": "100px"
-                              },
-                              attrs: {
-                                src: pendingFriend.avatar,
-                                alt: "author"
-                              }
+                              attrs: { src: "/img/avatar8.jpg", alt: "author" }
                             })
                           ]),
                           _vm._v(" "),
-                          _c(
-                            "div",
-                            { staticClass: "author-content" },
-                            [
-                              _c(
-                                "router-link",
-                                {
-                                  staticClass: "h5 author-name",
-                                  attrs: {
-                                    to: {
-                                      name: "about",
-                                      params: { slug: pendingFriend.slug }
-                                    }
-                                  }
-                                },
-                                [_vm._v(_vm._s(pendingFriend.name))]
-                              )
-                            ],
-                            1
-                          )
+                          _vm._m(1)
                         ]),
                         _vm._v(" "),
-                        _c(
-                          "div",
-                          {
-                            staticClass: "swiper-container",
-                            attrs: { "data-slide": "fade" }
-                          },
-                          [
-                            _c("div", { staticClass: "swiper-wrapper" }, [
-                              _c("div", { staticClass: "swiper-slide" }, [
-                                _c(
-                                  "div",
-                                  {
-                                    staticClass: "friend-count",
-                                    attrs: { "data-swiper-parallax": "-500" }
-                                  },
-                                  [
-                                    _c(
-                                      "a",
-                                      { staticClass: "friend-count-item" },
-                                      [
-                                        (pendingFriend.gender = 1)
-                                          ? _c(
-                                              "div",
-                                              { staticClass: "title" },
-                                              [_vm._v("Male")]
-                                            )
-                                          : _c(
-                                              "div",
-                                              { staticClass: "title" },
-                                              [_vm._v("Female")]
-                                            )
-                                      ]
-                                    )
-                                  ]
-                                ),
-                                _vm._v(" "),
-                                _c(
-                                  "div",
-                                  {
-                                    staticClass: "control-block-button",
-                                    attrs: { "data-swiper-parallax": "-100" }
-                                  },
-                                  [
-                                    _c(
-                                      "a",
-                                      {
-                                        staticClass: "btn btn-control bg-blue",
-                                        attrs: { href: "#" }
-                                      },
-                                      [
-                                        _c(
-                                          "svg",
-                                          {
-                                            staticClass: "olymp-happy-face-icon"
-                                          },
-                                          [
-                                            _c("use", {
-                                              attrs: {
-                                                href:
-                                                  "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
-                                              }
-                                            })
-                                          ]
-                                        )
-                                      ]
-                                    ),
-                                    _vm._v(" "),
-                                    _c(
-                                      "a",
-                                      {
-                                        staticClass:
-                                          "btn btn-control bg-purple",
-                                        attrs: { href: "#" }
-                                      },
-                                      [
-                                        _c(
-                                          "svg",
-                                          {
-                                            staticClass:
-                                              "olymp-chat---messages-icon"
-                                          },
-                                          [
-                                            _c("use", {
-                                              attrs: {
-                                                href:
-                                                  "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
-                                              }
-                                            })
-                                          ]
-                                        )
-                                      ]
-                                    )
-                                  ]
-                                )
-                              ]),
+                        _c("div", { staticClass: "swiper-container" }, [
+                          _c("div", { staticClass: "swiper-wrapper" }, [
+                            _c("div", { staticClass: "swiper-slide" }, [
+                              _vm._m(2),
                               _vm._v(" "),
-                              _vm._m(5, true)
+                              _c(
+                                "div",
+                                {
+                                  staticClass: "control-block-button",
+                                  attrs: { "data-swiper-parallax": "-100" }
+                                },
+                                [
+                                  _c(
+                                    "a",
+                                    {
+                                      staticClass: "btn btn-control bg-blue",
+                                      attrs: { href: "#" }
+                                    },
+                                    [
+                                      _c(
+                                        "svg",
+                                        {
+                                          staticClass: "olymp-happy-face-icon"
+                                        },
+                                        [
+                                          _c("use", {
+                                            attrs: {
+                                              href:
+                                                "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                            }
+                                          })
+                                        ]
+                                      )
+                                    ]
+                                  ),
+                                  _vm._v(" "),
+                                  _c(
+                                    "a",
+                                    {
+                                      staticClass: "btn btn-control bg-purple",
+                                      attrs: { href: "#" }
+                                    },
+                                    [
+                                      _c(
+                                        "svg",
+                                        {
+                                          staticClass:
+                                            "olymp-chat---messages-icon"
+                                        },
+                                        [
+                                          _c("use", {
+                                            attrs: {
+                                              href:
+                                                "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
+                                            }
+                                          })
+                                        ]
+                                      )
+                                    ]
+                                  )
+                                ]
+                              )
                             ]),
                             _vm._v(" "),
-                            _c("div", { staticClass: "swiper-pagination" })
-                          ]
-                        )
+                            _vm._m(3)
+                          ]),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "swiper-pagination" })
+                        ])
                       ])
                     ])
                   ])
                 ]
               )
-            })
-      ],
-      2
-    ),
-    _vm._v(" "),
-    _c("h3", [_vm._v("All Friend")])
-  ])
+            : _vm._l(_vm.pendingFriends, function(pendingFriend) {
+                return _c(
+                  "div",
+                  {
+                    staticClass: "col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-6"
+                  },
+                  [
+                    _c("div", { staticClass: "ui-block" }, [
+                      _c("div", { staticClass: "friend-item" }, [
+                        _c("div", { staticClass: "friend-header-thumb" }, [
+                          _c("img", {
+                            staticStyle: {
+                              "max-width": "293px",
+                              "max-height": "112.4px"
+                            },
+                            attrs: { src: "/img/friend1.jpg", alt: "friend" }
+                          })
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "friend-item-content" }, [
+                          _c("div", { staticClass: "more" }, [
+                            _c(
+                              "svg",
+                              { staticClass: "olymp-three-dots-icon" },
+                              [
+                                _c("use", {
+                                  attrs: {
+                                    href:
+                                      "/svg-icons/sprites/icons.svg#olymp-three-dots-icon"
+                                  }
+                                })
+                              ]
+                            ),
+                            _vm._v(" "),
+                            _vm._m(4, true)
+                          ]),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "friend-avatar" }, [
+                            _c("div", { staticClass: "author-thumb" }, [
+                              _c("img", {
+                                staticStyle: {
+                                  "max-width": "100px",
+                                  "max-height": "100px"
+                                },
+                                attrs: {
+                                  src: pendingFriend.avatar,
+                                  alt: "author"
+                                }
+                              })
+                            ]),
+                            _vm._v(" "),
+                            _c(
+                              "div",
+                              { staticClass: "author-content" },
+                              [
+                                _c(
+                                  "router-link",
+                                  {
+                                    staticClass: "h5 author-name",
+                                    attrs: { to: { name: "about" } }
+                                  },
+                                  [_vm._v(_vm._s(pendingFriend.name))]
+                                )
+                              ],
+                              1
+                            )
+                          ]),
+                          _vm._v(" "),
+                          _c(
+                            "div",
+                            {
+                              staticClass: "swiper-container",
+                              attrs: { "data-slide": "fade" }
+                            },
+                            [
+                              _c("div", { staticClass: "swiper-wrapper" }, [
+                                _c("div", { staticClass: "swiper-slide" }, [
+                                  _c(
+                                    "div",
+                                    {
+                                      staticClass: "friend-count",
+                                      attrs: { "data-swiper-parallax": "-500" }
+                                    },
+                                    [
+                                      _c(
+                                        "a",
+                                        { staticClass: "friend-count-item" },
+                                        [
+                                          (pendingFriend.gender = 1)
+                                            ? _c(
+                                                "div",
+                                                { staticClass: "title" },
+                                                [_vm._v("Male")]
+                                              )
+                                            : _c(
+                                                "div",
+                                                { staticClass: "title" },
+                                                [_vm._v("Female")]
+                                              )
+                                        ]
+                                      )
+                                    ]
+                                  ),
+                                  _vm._v(" "),
+                                  _c(
+                                    "div",
+                                    {
+                                      staticClass: "control-block-button",
+                                      attrs: { "data-swiper-parallax": "-100" }
+                                    },
+                                    [
+                                      _c(
+                                        "a",
+                                        {
+                                          staticClass:
+                                            "btn btn-control bg-blue",
+                                          attrs: { href: "#" }
+                                        },
+                                        [
+                                          _c(
+                                            "svg",
+                                            {
+                                              staticClass:
+                                                "olymp-happy-face-icon"
+                                            },
+                                            [
+                                              _c("use", {
+                                                attrs: {
+                                                  href:
+                                                    "/svg-icons/sprites/icons.svg#olymp-happy-face-icon"
+                                                }
+                                              })
+                                            ]
+                                          )
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "a",
+                                        {
+                                          staticClass:
+                                            "btn btn-control bg-purple",
+                                          attrs: { href: "#" }
+                                        },
+                                        [
+                                          _c(
+                                            "svg",
+                                            {
+                                              staticClass:
+                                                "olymp-chat---messages-icon"
+                                            },
+                                            [
+                                              _c("use", {
+                                                attrs: {
+                                                  href:
+                                                    "/svg-icons/sprites/icons.svg#olymp-chat---messages-icon"
+                                                }
+                                              })
+                                            ]
+                                          )
+                                        ]
+                                      )
+                                    ]
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _vm._m(5, true)
+                              ]),
+                              _vm._v(" "),
+                              _c("div", { staticClass: "swiper-pagination" })
+                            ]
+                          )
+                        ])
+                      ])
+                    ])
+                  ]
+                )
+              })
+        ],
+        2
+      ),
+      _vm._v(" "),
+      _c("vue-paginate"),
+      _vm._v(" "),
+      _c("h3", [_vm._v("All Friend")])
+    ],
+    1
+  )
 }
 var staticRenderFns = [
   function() {
@@ -74851,6 +74987,317 @@ if (false) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 115 */,
+/* 116 */,
+/* 117 */,
+/* 118 */,
+/* 119 */,
+/* 120 */,
+/* 121 */,
+/* 122 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(123);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(4)("3518dfb6", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-981051ca\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Friends.vue", function() {
+     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-981051ca\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Friends.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 123 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(2)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 124 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(125)
+}
+var normalizeComponent = __webpack_require__(0)
+/* script */
+var __vue_script__ = __webpack_require__(127)
+/* template */
+var __vue_template__ = __webpack_require__(128)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-201a581f"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\Profile\\FriendPaginate.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-201a581f", Component.options)
+  } else {
+    hotAPI.reload("data-v-201a581f", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 125 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(126);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(4)("aae5136c", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-201a581f\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./FriendPaginate.vue", function() {
+     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-201a581f\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./FriendPaginate.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 126 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(2)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.page-link[data-v-201a581f]{\n    color: #ff5e3a !important;\n}\n.page-link[data-v-201a581f]:hover{\n    color: white !important;\n}\n.disabled[data-v-201a581f]{\n    color: #3c4d58 !important;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 127 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(3);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["b" /* mapGetters */])({
+        from: 'from',
+        to: 'to',
+        total: 'total',
+        firstPageUrl: 'firstPageUrl',
+        prevPageUrl: 'prevPageUrl',
+        currentPage: 'currentPage',
+        nextPageUrl: 'nextPageUrl',
+        lastPageUrl: 'lastPageUrl'
+    })),
+    methods: {
+        actionPagination: function actionPagination(sendUrl) {
+            this.$store.dispatch('getActionPagination', sendUrl);
+        }
+    }
+});
+
+/***/ }),
+/* 128 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "text-center" }, [
+    _c("div", { staticClass: "d-flex justify-content-center" }, [
+      _c("ul", { staticClass: "pagination" }, [
+        _c("li", { staticClass: "page-item" }, [
+          _c(
+            "a",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.currentPage != 1,
+                  expression: "currentPage != 1"
+                }
+              ],
+              staticClass: "page-link",
+              on: {
+                click: function($event) {
+                  _vm.actionPagination(_vm.firstPageUrl)
+                }
+              }
+            },
+            [_vm._v("First")]
+          )
+        ]),
+        _vm._v(" "),
+        _c("li", { staticClass: "page-item" }, [
+          _c(
+            "a",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.currentPage != 1,
+                  expression: "currentPage != 1"
+                }
+              ],
+              staticClass: "page-link",
+              attrs: { disabled: _vm.prevPageUrl == null },
+              on: {
+                click: function($event) {
+                  _vm.actionPagination(_vm.prevPageUrl)
+                }
+              }
+            },
+            [_vm._v("Prev")]
+          )
+        ]),
+        _vm._v(" "),
+        _c("li", { staticClass: "page-item" }, [
+          _c("a", { staticClass: "page-link" }, [
+            _vm._v(_vm._s(_vm.currentPage))
+          ])
+        ]),
+        _vm._v(" "),
+        _c("li", { staticClass: "page-item" }, [
+          _c(
+            "a",
+            {
+              staticClass: "page-link",
+              class: _vm.nextPageUrl == null ? "disabled" : "",
+              attrs: { disabled: _vm.nextPageUrl == null },
+              on: {
+                click: function($event) {
+                  _vm.actionPagination(_vm.nextPageUrl)
+                }
+              }
+            },
+            [_vm._v("Next")]
+          )
+        ]),
+        _vm._v(" "),
+        _c("li", { staticClass: "page-item" }, [
+          _c(
+            "a",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.to != _vm.total,
+                  expression: "to != total"
+                }
+              ],
+              staticClass: "page-link",
+              on: {
+                click: function($event) {
+                  _vm.actionPagination(_vm.lastPageUrl)
+                }
+              }
+            },
+            [_vm._v("Last")]
+          )
+        ])
+      ])
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-201a581f", module.exports)
+  }
+}
 
 /***/ })
 /******/ ]);

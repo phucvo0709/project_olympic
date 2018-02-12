@@ -11,4 +11,8 @@ class Friendship extends Model
         'user_requested',
         'status'
     ];
+
+    public function user(){
+        return $this->belongsTo('App\User', 'user_requested', 'id');
+    }
 }

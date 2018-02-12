@@ -51,16 +51,12 @@ trait Friendable{
 
     public function pending_friend_requests_sent()
     {
-        $users = array();
+        $friends = Friendship::where(['requester' => Auth::user()->id, 'status' => 'Pending'])
+            ->with('user')->paginate(4);
 
-        $friendships = Friendship::where('status', 0)
-            ->where('requester', $this->id)
-            ->get();
-        foreach($friendships as $friendship):
-            array_push($users, User::find($friendship->user_requested));
-        endforeach;
 
-        return $users;
+
+        return response()->json($friends);
     }
 
     public function pending_friend_requests_sent_ids()
