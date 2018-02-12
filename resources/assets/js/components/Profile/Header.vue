@@ -2112,7 +2112,7 @@
                                     <div class="col-lg-5 col-md-5 ">
                                         <ul class="profile-menu">
                                             <li>
-                                                <router-link :to="{ name: 'timeline' }" active-class="active" exact>Timeline</router-link>
+                                                <router-link :to="{ name: 'timeline', params: {slug: authSlug } }" active-class="active" exact>Timeline</router-link>
                                             </li>
                                             <li>
                                                 <router-link :to="{ name: 'about', params: { slug: slug }}" active-class="active">About</router-link>

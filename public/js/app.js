@@ -73013,7 +73013,10 @@ var render = function() {
                               "router-link",
                               {
                                 attrs: {
-                                  to: { name: "timeline" },
+                                  to: {
+                                    name: "timeline",
+                                    params: { slug: _vm.authSlug }
+                                  },
                                   "active-class": "active",
                                   exact: ""
                                 }
