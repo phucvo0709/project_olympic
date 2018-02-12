@@ -8,20 +8,24 @@
             </li>
             <li class="page-item">
                 <a class="page-link"
-                   @click="actionPagination(prevPageUrl)" :disabled="prevPageUrl == null" v-show="currentPage != 1">Prev</a>
+                   @click="actionPagination(prevPageUrl)" :disabled="prevPageUrl == null"
+                   v-show="currentPage != 1">Prev</a>
+            </li>
+            <li class="page-item" v-for="page in totalPageArr">
+                <a class="page-link" :class="(currentPage === page) ? 'disabled' : ''"
+                   @click="actionPaginationParams(urlPagination, page)" :disabled="currentPage === page">{{page}}</a>
             </li>
             <li class="page-item">
-                <a class="page-link">{{currentPage}}</a>
+                <a class="page-link" :class="(nextPageUrl == null) ? 'disabled' : ''"
+                   @click="actionPagination(nextPageUrl)"
+                   :disabled="nextPageUrl == null" v-show="to !== total">Next</a>
             </li>
             <li class="page-item">
-                <a class="page-link" :class="(nextPageUrl == null) ? 'disabled' : ''" @click="actionPagination(nextPageUrl)" :disabled="nextPageUrl == null">Next</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" @click="actionPagination(lastPageUrl)" v-show="to != total">Last</a>
+                <a class="page-link" @click="actionPagination(lastPageUrl)" v-show="to !== total">Last</a>
             </li>
         </ul>
     </div>
-
+    <p>watch from {{from}} to {{to}} total {{total}} friend pending request</p>
 </div>
 </template>
 
@@ -38,12 +42,22 @@
                 currentPage: 'currentPage',
                 nextPageUrl: 'nextPageUrl',
                 lastPageUrl: 'lastPageUrl',
+                totalPageArr: 'totalPageArr'
             })
+        },
+        data (){
+            return {
+                urlPagination: '/api/getpendingrequest?page=',
+            }
         },
         methods: {
             actionPagination: function(sendUrl){
                 this.$store.dispatch('getActionPagination', sendUrl)
             },
+            actionPaginationParams: function(baseUrl, param){
+                let url = baseUrl + param
+                this.$store.dispatch('getActionPagination', url)
+            }
         }
     }
 </script>
@@ -58,4 +72,5 @@
     .disabled{
         color: #3c4d58 !important;
     }
+
 </style>

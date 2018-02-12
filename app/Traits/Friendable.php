@@ -54,8 +54,6 @@ trait Friendable{
         $friends = Friendship::where(['requester' => Auth::user()->id, 'status' => 'Pending'])
             ->with('user')->paginate(4);
 
-
-
         return response()->json($friends);
     }
 

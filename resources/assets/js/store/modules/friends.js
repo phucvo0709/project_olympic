@@ -8,7 +8,8 @@ const state = {
     prevPageUrl: null,
     currentPage: null,
     nextPageUrl: null,
-    lastPageUrl: null
+    lastPageUrl: null,
+    totalPageArr: []
 }
 const actions = {
 
@@ -34,6 +35,16 @@ const actions = {
                 let nextPageUrl = resp.data.next_page_url
                 let lastPageUrl = resp.data.last_page_url
 
+                let totalPage = Math.ceil(total/4)
+                let totalPageArr = [];
+                let i ;
+                let min = Math.max(currentPage - 4, 1)
+                let max = Math.min(currentPage + 4, totalPage)
+                console.log(min, max)
+                for(i = min; i <= max; i++){
+                    totalPageArr.push(i)
+                }
+
                 commit('GET_FROM', from)
                 commit('GET_TO', to)
                 commit('GET_TOTAL', total)
@@ -42,6 +53,7 @@ const actions = {
                 commit('GET_CURRENTPAGE', currentPage)
                 commit('GET_NEXTPAGEURL', nextPageUrl)
                 commit('GET_LASTPAGEURL', lastPageUrl)
+                commit('GET_TOTALPAGEARR', totalPageArr)
             })
     },
     getActionPagination({commit}, url){
@@ -60,20 +72,27 @@ const actions = {
                 let from = resp.data.from
                 let to = resp.data.to
                 let total = resp.data.total
-                let firstPageUrl = resp.data.first_page_url
                 let prevPageUrl = resp.data.prev_page_url
                 let currentPage = resp.data.current_page
                 let nextPageUrl = resp.data.next_page_url
-                let lastPageUrl = resp.data.last_page_url
+
+                let totalPage = Math.ceil(total/4)
+                let totalPageArr = [];
+                let i ;
+                let min = Math.max(currentPage - 1, 1)
+                let max = Math.min(currentPage + 4, totalPage)
+                console.log(min, max)
+                for(i = min; i <= max; i++){
+                    totalPageArr.push(i)
+                }
 
                 commit('GET_FROM', from)
                 commit('GET_TO', to)
                 commit('GET_TOTAL', total)
-                commit('GET_FIRSTPAGEURL', firstPageUrl)
                 commit('GET_PREVPAGEURL', prevPageUrl)
                 commit('GET_CURRENTPAGE', currentPage)
                 commit('GET_NEXTPAGEURL', nextPageUrl)
-                commit('GET_LASTPAGEURL', lastPageUrl)
+                commit('GET_TOTALPAGEARR', totalPageArr)
             })
     }
 }
@@ -106,6 +125,9 @@ const mutations = {
     },
     'GET_LASTPAGEURL' (state, lastPageUrl){
         state.lastPageUrl = lastPageUrl
+    },
+    'GET_TOTALPAGEARR' (state, totalPageArr){
+        state.totalPageArr = totalPageArr
     }
 }
 
@@ -137,6 +159,9 @@ const getters = {
     },
     lastPageUrl: state => {
         return state.lastPageUrl
+    },
+    totalPageArr: state => {
+        return state.totalPageArr
     }
 }
 
