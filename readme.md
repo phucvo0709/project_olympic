@@ -24,3 +24,5 @@ Update:
   + Complete Laravel and vuejs: one-page router profile
 - 12/2: 
   + Complete Laravel and vuejs: search and pagination
+- 16/2:
+  + Complete : Add Friend
