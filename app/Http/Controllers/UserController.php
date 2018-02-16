@@ -74,6 +74,10 @@ class UserController extends Controller
         return Auth::user()->cancel_request_add_friend($user_requested);
     }
 
+    public function cancelRequestBar($user_id){
+        return Auth::user()->cancel_request_bar($user_id);
+    }
+
     public function checkFriend($user_id){
         return Auth::user()->check_friend($user_id);
     }

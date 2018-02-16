@@ -58,6 +58,7 @@ Route::group(['prefix' => 'api','middleware' => 'auth'], function() {
     //Button Add Friend
     Route::get('addfriend/{user_requested_id}', 'UserController@addFriend');
     Route::delete('cancelrequest/{user_requested}', 'UserController@cancelRequest');
+    Route::delete('cancelrequestbar/{user_id}', 'UserController@cancelRequestBar');
     Route::get('getpendingto/{user_id}', 'UserController@getPendingTo');
     Route::get('getpendingfrom/{user_id}', 'UserController@getPendingFrom');
     Route::get('getpendingrequest', 'UserController@getPendingRequest');

@@ -9,8 +9,6 @@
             <div class="more-dropdown more-with-triangle triangle-top-center">
                 <div class="ui-block-title ui-block-title-small">
                     <h6 class="title">FRIEND REQUESTS</h6>
-                    <a href="#">Find Friends</a>
-                    <a href="#">Settings</a>
                 </div>
 
                 <div class="mCustomScrollbar ps ps--theme_default ps--active-y" data-mcs-theme="dark"
@@ -30,7 +28,12 @@
                                                     :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
 										</span>
 									</a>
-                        </span>
+                                    <a @click="deleteFriendBar(data.id)" class="accept-request request-del">
+										<span class="icon-minus">
+											<svg class="olymp-happy-face-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
+										</span>
+									</a>
+                            </span>
                         </li>
                     </ul>
                     <div class="ps__scrollbar-x-rail" style="left: 0px; bottom: 0px;">
@@ -62,6 +65,9 @@
         methods: {
             addFriendBar: function(userId){
                 this.$store.dispatch('addFriendBar', userId)
+            },
+            deleteFriendBar: function(userId){
+                this.$store.dispatch('deleteFriendBar', userId)
             },
         }
     }

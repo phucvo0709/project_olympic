@@ -139,6 +139,13 @@ trait Friendable{
         return response()->json('Cancel Request Success');
 
     }
+    public function cancel_request_bar($user_id){
+
+        Friendship::where('requester', $user_id)->where('user_requested', Auth::user()->id)->delete();
+
+        return response()->json('Cancel Request Success');
+
+    }
 
     public function pendingToList(){
 

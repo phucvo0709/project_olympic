@@ -10,6 +10,17 @@ const actions = {
                 location.reload();
             })
     },
+    deleteFriendBar ({commit}, userId){
+        axios.delete(`/api/cancelrequestbar/${userId}`)
+            .then(resp =>{
+                swal({
+                    title: resp.data,
+                    type: "success"
+                }).then(function () {
+                    location.reload();
+                });
+            })
+    },
     addFriend ({commit}, userId) {
         if(state.buttonAddFriend === "Add Friend"){
             axios.get(`/api/addfriend/${userId}`)
