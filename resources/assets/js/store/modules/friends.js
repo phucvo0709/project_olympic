@@ -1,6 +1,7 @@
 const state = {
     friendSearch: [],
     penddingFriends: [],
+    allFriend: [],
 
     from: null,
     to: null,
@@ -22,6 +23,12 @@ const actions = {
                 }else{
                     commit('GET_FRIENDSEARCH', resp.data)
                 }
+            })
+    },
+    getAllFriend({commit}){
+        axios.get('/api/getallfriend')
+            .then(resp => {
+                commit('GET_ALLFRIEND', resp.data)
             })
     },
     getpendingFriends ({commit}){
@@ -109,6 +116,7 @@ const actions = {
 }
 
 const mutations = {
+
     'GET_FRIENDSEARCH' (state, friendSearch){
         state.friendSearch = friendSearch
     },
@@ -142,6 +150,10 @@ const mutations = {
     },
     'GET_TOTALPAGEARR' (state, totalPageArr){
         state.totalPageArr = totalPageArr
+    },
+
+    'GET_ALLFRIEND' (state, allFriend) {
+        state.allFriend = allFriend
     }
 }
 
@@ -151,6 +163,9 @@ const getters = {
     },
     penddingFriends: state => {
         return state.penddingFriends
+    },
+    allFriend: state => {
+        return state.allFriend
     },
 
     from: state => {

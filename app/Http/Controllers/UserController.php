@@ -42,6 +42,12 @@ class UserController extends Controller
         }
     }
 
+
+    //fuction to
+    public function pendingToList(){
+        return Auth::user()->pendingToList();
+    }
+
     public function getPendingTo($user_id){
         return Auth::user()->has_pending_friend_request_sent_to($user_id);
     }
@@ -50,12 +56,29 @@ class UserController extends Controller
         return Auth::user()->pending_friend_requests_sent();
     }
 
+    //fuction from
+    public function getPendingFrom($user_id){
+        return Auth::user()->has_pending_friend_request_sent_from($user_id);
+    }
+
+
+    //fuction action
     public function addFriend($user_requested_id){
         return Auth::user()->add_friend($user_requested_id);
+    }
+    public function acceptfriend($user_id){
+        return Auth::user()->accept_friend($user_id);
     }
 
     public function cancelRequest($user_requested){
         return Auth::user()->cancel_request_add_friend($user_requested);
     }
 
+    public function checkFriend($user_id){
+        return Auth::user()->check_friend($user_id);
+    }
+
+    public function allFriend(){
+        return Auth::user()->friends();
+    }
 }

@@ -3,6 +3,13 @@ const state = {
 }
 
 const actions = {
+    addFriendBar({commit}, userId){
+        axios.get(`/api/addfriend/${userId}`)
+            .then(resp => {
+                swal(resp.data);
+                location.reload();
+            })
+    },
     addFriend ({commit}, userId) {
         if(state.buttonAddFriend === "Add Friend"){
             axios.get(`/api/addfriend/${userId}`)
@@ -12,8 +19,15 @@ const actions = {
                     $('.btn-breez').css('background', 'gray')
                     document.getElementsByClassName("btnAddFriend").disabled = true;
                 })
-        }
-        else if(state.buttonAddFriend === "Cancel Request"){
+        }else if(state.buttonAddFriend === "Accept Friend"){
+            axios.get(`/api/acceptfriend/${userId}`)
+                .then(resp => {
+                    swal(resp.data)
+                    commit('SET_BUTTONADDFRIEND', 'Friend');
+                    $('.btnAddFriend').css('background', '#0066ff')
+                    document.getElementsByClassName("btnAddFriend").disabled = true;
+                })
+        }else if(state.buttonAddFriend === "Cancel Request"){
             axios.delete(`/api/cancelrequest/${userId}`)
                 .then(resp =>{
                     swal(resp.data)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Friendship;
 use App\Profile;
 use App\User;
 use Illuminate\Http\Request;
@@ -52,16 +53,16 @@ class ProfileController extends Controller
         }
     }
     public function apiGetProfile($slug){
-        $user = Auth::user()->where('slug', $slug)->get();
-        $user_id = $user[0]->id;
-        $profile = Profile::where('user_id', $user_id)->get();
+        $user = Auth::user()->with('profile')->where('slug', $slug)->get();
+
         if(Auth::user()->slug == $slug){
             $check = true;
         }else{
             $check = false;
         }
-        return response()->json([$user, $profile, $check]);
+        return response()->json([$user, $check]);
     }
+
     public function updateProfile(Request $request){
         Auth::user()->profile()->update($request->all());
     }

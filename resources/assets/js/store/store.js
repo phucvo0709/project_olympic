@@ -6,6 +6,7 @@ import about from './modules/about'
 import avatar from './modules/avatar'
 import friends from './modules/friends'
 import buttonAddFriend from './modules/buttonAddFriend'
+import pendingRequestTo from './modules/PendingRequestTo'
 
 import * as actions from './actions'
 
@@ -18,6 +19,7 @@ export default new Vuex.Store({
         about,
         avatar,
         friends,
-        buttonAddFriend
+        buttonAddFriend,
+        pendingRequestTo
     }
 })

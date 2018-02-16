@@ -1127,153 +1127,7 @@
 
                 <div class="control-block">
 
-                    <div class="control-icon more has-items">
-                        <svg class="olymp-happy-face-icon">
-                            <use :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use>
-                        </svg>
-                        <div class="label-avatar bg-blue">6</div>
-
-                        <div class="more-dropdown more-with-triangle triangle-top-center">
-                            <div class="ui-block-title ui-block-title-small">
-                                <h6 class="title">FRIEND REQUESTS</h6>
-                                <a href="#">Find Friends</a>
-                                <a href="#">Settings</a>
-                            </div>
-
-                            <div class="mCustomScrollbar ps ps--theme_default ps--active-y" data-mcs-theme="dark"
-                                 data-ps-id="13cea887-6672-7b94-6d29-420177e7e512">
-                                <ul class="notification-list friend-requests">
-                                    <li>
-                                        <div class="author-thumb">
-                                            <img :src="'/img/avatar55-sm.jpg'" alt="author">
-                                        </div>
-                                        <div class="notification-event">
-                                            <a href="#" class="h6 notification-friend">Tamara Romanoff</a>
-                                            <span class="chat-message-item">Mutual Friend: Sarah Hetfield</span>
-                                        </div>
-                                        <span class="notification-icon">
-									<a href="#" class="accept-request">
-										<span class="icon-add without-text">
-											<svg class="olymp-happy-face-icon"><use
-                                                    :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-										</span>
-									</a>
-
-									<a href="#" class="accept-request request-del">
-										<span class="icon-minus">
-											<svg class="olymp-happy-face-icon"><use
-                                                    :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-										</span>
-									</a>
-
-								</span>
-
-                                        <div class="more">
-                                            <svg class="olymp-three-dots-icon">
-                                                <use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use>
-                                            </svg>
-                                        </div>
-                                    </li>
-
-                                    <li>
-                                        <div class="author-thumb">
-                                            <img :src="'/img/avatar56-sm.jpg'" alt="author">
-                                        </div>
-                                        <div class="notification-event">
-                                            <a href="#" class="h6 notification-friend">Tony Stevens</a>
-                                            <span class="chat-message-item">4 Friends in Common</span>
-                                        </div>
-                                        <span class="notification-icon">
-									<a href="#" class="accept-request">
-										<span class="icon-add without-text">
-											<svg class="olymp-happy-face-icon"><use
-                                                    :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-										</span>
-									</a>
-
-									<a href="#" class="accept-request request-del">
-										<span class="icon-minus">
-											<svg class="olymp-happy-face-icon"><use
-                                                    :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-										</span>
-									</a>
-
-								</span>
-
-                                        <div class="more">
-                                            <svg class="olymp-three-dots-icon">
-                                                <use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use>
-                                            </svg>
-                                        </div>
-                                    </li>
-
-                                    <li class="accepted">
-                                        <div class="author-thumb">
-                                            <img :src="'/img/avatar57-sm.jpg'" alt="author">
-                                        </div>
-                                        <div class="notification-event">
-                                            You and <a href="#" class="h6 notification-friend">Mary Jane Stark</a> just
-                                            became
-                                            friends. Write on <a href="#" class="notification-link">her wall</a>.
-                                        </div>
-                                        <span class="notification-icon">
-									<svg class="olymp-happy-face-icon"><use :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-								</span>
-
-                                        <div class="more">
-                                            <svg class="olymp-three-dots-icon">
-                                                <use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use>
-                                            </svg>
-                                            <svg class="olymp-little-delete">
-                                                <use :href="'/svg-icons/sprites/icons.svg#olymp-little-delete'"></use>
-                                            </svg>
-                                        </div>
-                                    </li>
-
-                                    <li>
-                                        <div class="author-thumb">
-                                            <img :src="'/img/avatar58-sm.jpg'" alt="author">
-                                        </div>
-                                        <div class="notification-event">
-                                            <a href="#" class="h6 notification-friend">Stagg Clothing</a>
-                                            <span class="chat-message-item">9 Friends in Common</span>
-                                        </div>
-                                        <span class="notification-icon">
-									<a href="#" class="accept-request">
-										<span class="icon-add without-text">
-											<svg class="olymp-happy-face-icon"><use
-                                                    :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-										</span>
-									</a>
-
-									<a href="#" class="accept-request request-del">
-										<span class="icon-minus">
-											<svg class="olymp-happy-face-icon"><use
-                                                    :href="'/svg-icons/sprites/icons.svg#olymp-happy-face-icon'"></use></svg>
-										</span>
-									</a>
-
-								</span>
-
-                                        <div class="more">
-                                            <svg class="olymp-three-dots-icon">
-                                                <use :href="'/svg-icons/sprites/icons.svg#olymp-three-dots-icon'"></use>
-                                            </svg>
-                                        </div>
-                                    </li>
-
-                                </ul>
-                                <div class="ps__scrollbar-x-rail" style="left: 0px; bottom: 0px;">
-                                    <div class="ps__scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-                                </div>
-                                <div class="ps__scrollbar-y-rail" style="top: 0px; height: 300px; right: 0px;">
-                                    <div class="ps__scrollbar-y" tabindex="0" style="top: 0px; height: 241px;"></div>
-                                </div>
-                            </div>
-
-                            <a href="#" class="view-all bg-blue">Check all your Events</a>
-                        </div>
-                    </div>
+                    <vue-list-pending></vue-list-pending>
 
                     <div class="control-icon more has-items">
                         <svg class="olymp-chat---messages-icon">
@@ -2222,7 +2076,8 @@
             }
         },
         components: {
-            'vue-search-friend': require('./SearchFriend')
+            'vue-search-friend': require('./SearchFriend'),
+            'vue-list-pending': require('./ListPending')
         },
         methods: {
             addFriend: function(){

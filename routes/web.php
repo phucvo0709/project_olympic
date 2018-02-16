@@ -59,10 +59,11 @@ Route::group(['prefix' => 'api','middleware' => 'auth'], function() {
     Route::get('addfriend/{user_requested_id}', 'UserController@addFriend');
     Route::delete('cancelrequest/{user_requested}', 'UserController@cancelRequest');
     Route::get('getpendingto/{user_id}', 'UserController@getPendingTo');
+    Route::get('getpendingfrom/{user_id}', 'UserController@getPendingFrom');
     Route::get('getpendingrequest', 'UserController@getPendingRequest');
-
-    Route::get('test', function(){
-       return Auth::user()->pending_friend_requests_sent_ids();
-    });
+    Route::get('acceptfriend/{user_id}', 'UserController@addFriend');
+    Route::get('checkfriend/{user_id}', 'UserController@checkFriend');
+    Route::get('getpendingtolist', 'UserController@pendingToList');
+    Route::get('getallfriend', 'UserController@allFriend');
 });
 

@@ -6,7 +6,7 @@
                     <div class="ui-block-title">
                         <h6 class="title">Hobbies and Interests</h6>
                         <button @click="addFriend(userId)" class="btn btn-breez btn-sm btnAddFriend"
-                                style="color:white; display: block; float: right" v-if="authId != userId">{{buttonAddFriend}}</button>
+                                style="color:white; display: none; float: right" v-if="authId != userId">{{buttonAddFriend}}</button>
                     </div>
                     <div class="ui-block-content">
                         <div class="row">
@@ -141,7 +141,6 @@
         },
         computed: {
             ...mapGetters({
-                authId: 'authId',
                 user: 'user',
                 profile: 'profile',
                 check: 'check',
@@ -152,20 +151,23 @@
             },
             userId(){
                 return this.$store.getters.userId
+            },
+            authId(){
+                return this.$store.getters.authId
             }
-        },
-        components:{
-            'edit-form': require('./EditProfile')
         },
         data() {
             return{
                 empty: 'Empty',
             }
         },
+        components:{
+            'edit-form': require('./EditProfile')
+        },
         methods: {
             addFriend: function(userId){
                 this.$store.dispatch('addFriend', userId)
-            }
+            },
         },
     }
 </script>
