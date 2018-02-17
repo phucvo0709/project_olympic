@@ -7,6 +7,7 @@ import avatar from './modules/avatar'
 import friends from './modules/friends'
 import buttonAddFriend from './modules/buttonAddFriend'
 import pendingRequestTo from './modules/PendingRequestTo'
+import timeline from './modules/timeline'
 
 import * as actions from './actions'
 
@@ -20,6 +21,7 @@ export default new Vuex.Store({
         avatar,
         friends,
         buttonAddFriend,
-        pendingRequestTo
+        pendingRequestTo,
+        timeline
     }
 })

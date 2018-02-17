@@ -66,5 +66,9 @@ Route::group(['prefix' => 'api','middleware' => 'auth'], function() {
     Route::get('checkfriend/{user_id}', 'UserController@checkFriend');
     Route::get('getpendingtolist', 'UserController@pendingToList');
     Route::get('getallfriend', 'UserController@allFriend');
+
+    //Post
+    Route::get('/getposts', 'PostsController@posts');
+    Route::post('/createpost', 'PostsController@store');
 });
 

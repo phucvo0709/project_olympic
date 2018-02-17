@@ -44,4 +44,8 @@ class User extends Authenticatable
     public function friendships(){
         return $this->hasMany('App\Friendship', 'user_requested', 'id');
     }
+
+    public function posts(){
+        return $this->hasMany('App\Post')->orderBy('created_at');
+    }
 }
