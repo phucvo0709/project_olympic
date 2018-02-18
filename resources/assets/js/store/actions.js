@@ -14,11 +14,12 @@ getAuth = ({commit}) => {
 getUser = ({commit}, slug) => {
     axios.get(`/api/getprofile/${slug}`)
         .then(resp =>{
+            console.log(resp.data[0])
             var userId = resp.data[0][0]['id']
             commit('SET_USERID', userId)
             commit('SET_USER', resp.data[0][0])
             commit('SET_PROFILE', resp.data[0][0]['profile'])
-            commit('SET_CHECK', resp.data[2])
+            commit('SET_CHECK', resp.data[1])
             commit('SET_AVATAR', resp.data[0][0]['avatar'])
             if(slug = resp.data[0][0]['slug']){
                 axios.get(`/api/checkfriend/` + userId)

@@ -37,25 +37,26 @@ trait Friendable{
         }
     }
 
-    public function friends(){
-
+    public function friends()
+    {
         $friends = array();
 
-        $data = Friendship::where(['user_requested' => Auth::user()->id, 'status' => 'Friend'])
+        $f1 = Friendship::where('status', 'Friend')
+            ->where('requester', Auth::user()->id)
             ->get();
-
-        foreach($data as $friendship):
-            array_push($friends, User::find($friendship->requester));
-        endforeach;
-
-        $data2 = Friendship::where(['requester' => Auth::user()->id, 'status' => 'Friend'])
-            ->get();
-
-        foreach($data2 as $friendship):
+        foreach($f1 as $friendship):
             array_push($friends, User::find($friendship->user_requested));
         endforeach;
+        $friends2 = array();
 
-        return response()->json($friends);
+        $f2 = Friendship::where('status', 'Friend')
+            ->where('user_requested', Auth::user()->id)
+            ->get();
+        foreach($f2 as $friendship):
+            array_push($friends2, User::find($friendship->requester));
+        endforeach;
+        return array_merge($friends, $friends2);
+
     }
 
     //Pending request to

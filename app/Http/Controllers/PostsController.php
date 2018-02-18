@@ -5,13 +5,27 @@ use App\Http\Requests\CreatePostRequest;
 use App\Post;
 use App\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PostsController extends Controller
 {
     public function posts(){
-        $posts = Post::where('user_id', Auth::user()->id)->orderBy('created_at', 'DESC')->get();
+        $friends = Auth::user()->friends();
 
-        return response()->json($posts);
+        $feed = array();
+        foreach($friends as $friend):
+
+            foreach($friend->posts as $post):
+                array_push($feed, $post);
+            endforeach;
+        endforeach;
+        foreach(Auth::user()->posts as $post):
+            array_push($feed, $post);
+        endforeach;
+        usort($feed, function($p1, $p2){
+            return $p1->id < $p2->id;
+        });
+        return $feed;
     }
 
     public function store(CreatePostRequest $request){

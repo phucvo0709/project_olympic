@@ -19,8 +19,13 @@ const actions = {
     addPost({commit}, data){
         axios.post('/api/createpost', {
             content: data
+        }).then(resp => {
+            axios.get('/api/getposts')
+                .then(resp =>{
+                    commit('SET_POSTS', resp.data)
+                })
         })
-    }
+    },
 }
 
 const getters = {

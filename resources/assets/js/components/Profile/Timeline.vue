@@ -6,7 +6,8 @@
 
             <div class="col-xl-6 order-xl-2 col-lg-12 order-lg-1 col-md-12 col-sm-12 col-xs-12">
                 <vue-post></vue-post>
-           </div>
+
+            </div>
 
             <!-- ... end Main Content -->
 
