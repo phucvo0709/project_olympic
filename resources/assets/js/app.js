@@ -16,7 +16,6 @@ axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
 
 import swal from 'sweetalert'
 import animate from 'animate.css'
-
 import store from './store/store'
 
 import VueRouter from 'vue-router'
