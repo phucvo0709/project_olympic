@@ -45353,12 +45353,19 @@ var actions = {
     getPosts: function getPosts(_ref) {
         var commit = _ref.commit;
 
-        axios.get('/api/getposts').then(function (resp) {
+        axios.get('/api/getposts/5').then(function (resp) {
             commit('SET_POSTS', resp.data);
         });
     },
-    addPost: function addPost(_ref2, data) {
+    getPostsLimit: function getPostsLimit(_ref2, limit) {
         var commit = _ref2.commit;
+
+        axios.get('/api/getposts/' + limit).then(function (resp) {
+            commit('SET_POSTS', resp.data);
+        });
+    },
+    addPost: function addPost(_ref3, data) {
+        var commit = _ref3.commit;
 
         axios.post('/api/createpost', {
             content: data
@@ -73872,6 +73879,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
+//
 
 
 
@@ -73886,12 +73896,6 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["b" /* mapGetters */])({
         posts: 'posts'
     })),
-    data: function data() {
-        return {
-            data: this.$store.getters.posts
-        };
-    },
-
     methods: {
         moment: function (_moment) {
             function moment() {
@@ -73910,11 +73914,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             var _this = this;
 
             setTimeout(function () {
-                var temp = [];
-                for (var i = _this.list.length + 1; i <= _this.list.length + 20; i++) {
-                    temp.push(i);
+                for (var i = _this.posts.length + 1; i <= _this.posts.length + 5; i++) {
+                    _this.$store.dispatch('getPostsLimit', i);
                 }
-                _this.list = _this.list.concat(temp);
                 $state.loaded();
             }, 1000);
         }
@@ -74182,7 +74184,15 @@ var render = function() {
         ])
       }),
       _vm._v(" "),
-      _c("infinite-loading", { on: { infinite: _vm.infiniteHandler } })
+      _c("infinite-loading", { on: { infinite: _vm.infiniteHandler } }, [
+        _c("span", { attrs: { slot: "no-more" }, slot: "no-more" }, [
+          _vm._v("No More")
+        ]),
+        _vm._v(" "),
+        _c("span", { attrs: { slot: "no-results" }, slot: "no-results" }, [
+          _vm._v("123")
+        ])
+      ])
     ],
     2
   )

@@ -68,7 +68,7 @@ Route::group(['prefix' => 'api','middleware' => 'auth'], function() {
     Route::get('getallfriend', 'UserController@allFriend');
 
     //Post
-    Route::get('/getposts', 'PostsController@posts');
+    Route::get('/getposts/{limit}', 'PostsController@posts');
     Route::post('/createpost', 'PostsController@store');
 });
 

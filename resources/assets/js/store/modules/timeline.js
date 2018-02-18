@@ -11,7 +11,13 @@ const mutations = {
 
 const actions = {
     getPosts({commit}){
-        axios.get('/api/getposts')
+        axios.get('/api/getposts/5')
+            .then(resp =>{
+                commit('SET_POSTS', resp.data)
+            })
+    },
+    getPostsLimit({commit} , limit){
+        axios.get(`/api/getposts/${limit}`)
             .then(resp =>{
                 commit('SET_POSTS', resp.data)
             })

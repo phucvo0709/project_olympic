@@ -135,7 +135,10 @@
 
             <!-- .. end Post -->
         </div>
-        <infinite-loading @infinite="infiniteHandler"></infinite-loading>
+        <infinite-loading @infinite="infiniteHandler">
+            <span slot="no-more">No More</span>
+            <span slot="no-results">123</span>
+        </infinite-loading>
     </div>
 </template>
 
@@ -154,22 +157,15 @@
                 posts: 'posts',
             }),
         },
-        data(){
-            return {
-                data: this.$store.getters.posts
-            }
-        },
         methods: {
             moment: function () {
                 return moment();
             },
             infiniteHandler($state) {
                 setTimeout(() => {
-                    const temp = [];
-                    for (let i = this.list.length + 1; i <= this.list.length + 20; i++) {
-                        temp.push(i);
+                    for (let i = this.posts.length + 1; i <= this.posts.length + 5; i++) {
+                        this.$store.dispatch('getPostsLimit', i)
                     }
-                    this.list = this.list.concat(temp);
                     $state.loaded();
                 }, 1000);
             },

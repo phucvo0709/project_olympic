@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class PostsController extends Controller
 {
-    public function posts(){
+    public function posts($limit){
         $friends = Auth::user()->friends();
 
         $feed = array();
@@ -25,6 +25,8 @@ class PostsController extends Controller
         usort($feed, function($p1, $p2){
             return $p1->id < $p2->id;
         });
+
+        $feed = array_splice($feed, 0, $limit);
         return $feed;
     }
 
