@@ -18,6 +18,46 @@
 
 7: php artisan serve
 
+
+Edit Code In File:
+project_olympic\vendor\laravel\framework\src\Illuminate\Foundation\Auth\SendsPasswordResetEmails.php
+
+    protected function sendResetLinkResponse($response)
+    {
+        return response()->json(['Send mail reset password success', true]);
+    }
+    
+        protected function sendResetLinkFailedResponse(Request $request, $response)
+    {
+        return response()->json(['Email not found', false]);
+    }
+    
+Edit Code In File:
+project_olympic\vendor\laravel\framework\src\Illuminate\Auth\Passwords\CanResetPassword.php
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new MailResetPasswordToken($token));
+    }
+    
+Edit Code In File:
+project_olympic\vendor\laravel\framework\src\Illuminate\Foundation\Auth\ResetsPasswords.php
+
+    protected function resetPassword($user, $password)
+    {
+        $user->password = Hash::make($password);
+
+        $user->setRememberToken(Str::random(60));
+
+        $user->save();
+    }
+    
+    protected function sendResetResponse($response)
+    {
+        return redirect('/login')->with('resetPasswordSuccess', 'Reset Password Success');
+    }
+
+
 Update:
 - 11/2: 
   + Complete Laravel and vuejs: login, login with facebook, register, forgot password
